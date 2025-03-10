@@ -1,0 +1,5 @@
+.userlist {
+  max-height: 100dvh; /* Adjust based on your design */
+  overflow-y: auto; /* Enables vertical scrolling when the content exceeds max-height */
+  padding-right: 10px; /* Optional: prevents the scrollbar from overlapping the content */
+}
