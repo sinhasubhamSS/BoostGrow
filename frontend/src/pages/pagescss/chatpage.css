@@ -1,0 +1,33 @@
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.chatpage {
+  display: flex;
+  /* Flexbox to align sidebar and message sections */
+  width: 90%;
+  max-width: 1200px;
+  height: 100vh;
+  margin: auto;
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  /* Optional: rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  /* Optional: Soft shadow */
+}
+.sidebar__section {
+  display: flex;
+  width: 40%;
+  background-color: #fff;
+  border: 0.1px solid black;
+  border-radius: 5px;
+  margin: 0.2rem;
+  padding: 0.1rem;
+}
+.message__section{
+  width:60%
+}
