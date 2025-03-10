@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { fetchUsers } from '../../Redux/userSlice'
 import "./userlist.css"
 import { useDispatch, useSelector } from "react-redux"
@@ -6,11 +6,13 @@ import UserItem from './UserItem'
 
 function UserList({ searchUser, }) {
     const dispatch = useDispatch()
-    const { otherUsers, loading, error } = useSelector((state) => state.user)
+    const { otherUsers, loading, error, onlineUsers } = useSelector((state) => state.user)
 
     useEffect(() => {
-        dispatch(fetchUsers())
-    }, [dispatch])
+        if (!otherUsers?.length) {
+            dispatch(fetchUsers());
+        }
+    }, [dispatch, otherUsers?.length]);
     if (loading) {
         return <div>Loading...</div>
     }
@@ -18,10 +20,14 @@ function UserList({ searchUser, }) {
     if (error) {
         return <div>Error: {error}</div>
     }
+    const onlineUsersSet = new Set(onlineUsers);
     //filter user based on the search term
     // Agar searchUser empty string ("" or falsy) hai, to filtering mein aisa ho sakta hai ki sabhi users return ho jayenge. JavaScript mein, "anyString".includes("") hamesha true return karta hai.
-    const filteredusers = otherUsers?.filter((user) =>
-        user.username.toLowerCase().includes(searchUser.toLowerCase()))
+    const filteredusers = useMemo(() => {
+        return otherUsers?.filter((user) =>
+            user.username.toLowerCase().includes(searchUser.toLowerCase())
+        );
+    }, [otherUsers, searchUser]);
     return (
         <>
             <div className='userlist'>
@@ -31,7 +37,7 @@ function UserList({ searchUser, }) {
                     )) */}
                 {/* //ab filtered user dikhao ya phir all user */}
                 {filteredusers?.map((user) => (
-                    <UserItem key={user._id} user={user} />
+                    <UserItem key={user._id} user={user} onlineUsersSet={onlineUsersSet} />
                 ))}
             </div>
 

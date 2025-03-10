@@ -1,4 +1,4 @@
-.user__container {
+/* .user__container {
   width: 100%;
   display: flex;
   align-items: center;
@@ -31,4 +31,53 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+} */
+
+.user__container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 0.3rem;
+  border-radius: 5px;
+  padding: 10px 8px;
+  margin: 1px 0px;
+  cursor: pointer;
+}
+
+.user__container:hover {
+  background-color: rgba(161, 170, 170, 0.5);
+}
+
+.avatar__container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Added to position the dot */
+}
+
+.avatar__useritem {
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+}
+
+.username {
+  font-size: 1.5rem;
+  font-weight: 300;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-left: 10px; /* Space for the dot */
+}
+
+.user__dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background-color: green; /* Default color for online */
+  border: 2px solid white; /* Optional: Adds a white border around the dot */
 }

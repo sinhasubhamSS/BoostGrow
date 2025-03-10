@@ -40,6 +40,7 @@ const userSlice = createSlice({
     otherUsers: [],
     selectedUser: null,
     loggedinuser: null,
+    onlineUsers:[],
 
   },
   reducers: {
