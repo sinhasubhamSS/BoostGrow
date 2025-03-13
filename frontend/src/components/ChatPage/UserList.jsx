@@ -1,48 +1,49 @@
-import React, { useEffect, useMemo } from 'react'
-import { fetchUsers } from '../../Redux/userSlice'
-import "./userlist.css"
-import { useDispatch, useSelector } from "react-redux"
-import UserItem from './UserItem'
+import React, { useEffect, useMemo } from 'react';
+import { fetchUsers } from '../../Redux/userSlice';
+import "./userlist.css";
+import { useDispatch, useSelector } from "react-redux";
+import UserItem from './UserItem';
 
-function UserList({ searchUser, }) {
-    const dispatch = useDispatch()
-    const { otherUsers, loading, error, onlineUsers } = useSelector((state) => state.user)
+function UserList({ searchUser }) {
+    const dispatch = useDispatch();
+    const { otherUsers, loading, error, onlineUsers } = useSelector((state) => state.user);
+    const socket = useSelector((state) => state.socket.instance);
 
-    useEffect(() => {
-        if (!otherUsers?.length) {
-            dispatch(fetchUsers());
-        }
-    }, [dispatch, otherUsers?.length]);
-    if (loading) {
-        return <div>Loading...</div>
-    }
+    // ✅ Move hooks to the top to prevent rendering issues
+    const onlineUsersSet = useMemo(() => new Set(onlineUsers), [onlineUsers]);
 
-    if (error) {
-        return <div>Error: {error}</div>
-    }
-    const onlineUsersSet = new Set(onlineUsers);
-    //filter user based on the search term
-    // Agar searchUser empty string ("" or falsy) hai, to filtering mein aisa ho sakta hai ki sabhi users return ho jayenge. JavaScript mein, "anyString".includes("") hamesha true return karta hai.
-    const filteredusers = useMemo(() => {
+    const filteredUsers = useMemo(() => {
         return otherUsers?.filter((user) =>
             user.username.toLowerCase().includes(searchUser.toLowerCase())
         );
     }, [otherUsers, searchUser]);
+
+    useEffect(() => {
+        if (!socket) return; // ✅ Prevents running when socket is null
+
+        const handleNewUser = (newuser) => {
+            console.log("🆕 New User Registered:", newuser);
+            dispatch(fetchUsers());
+        };
+
+        socket.on("newUserRegistered", handleNewUser);
+
+        return () => {
+            socket.off("newUserRegistered", handleNewUser); // ✅ Cleanup on unmount
+        };
+    }, [dispatch, socket]); // ✅ Ensure `socket` dependency is handled
+
+    // ✅ Only return JSX after hooks are fully defined
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+
     return (
-        <>
-            <div className='userlist'>
-
-                {/* otherUsers?.map((user) => (
-                        <UserItem key={user._id} user={user} />
-                    )) */}
-                {/* //ab filtered user dikhao ya phir all user */}
-                {filteredusers?.map((user) => (
-                    <UserItem key={user._id} user={user} onlineUsersSet={onlineUsersSet} />
-                ))}
-            </div>
-
-        </>
-    )
+        <div className='userlist'>
+            {filteredUsers?.map((user) => (
+                <UserItem key={user._id} user={user} onlineUsersSet={onlineUsersSet} />
+            ))}
+        </div>
+    );
 }
 
-export default UserList
+export default UserList;

@@ -18,6 +18,7 @@ import jwt from "jsonwebtoken"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../specific/cloudinary.js";
 import bcrypt from "bcrypt"
+import { io } from "../socket.js"
 const register = async (req, res) => {
     try {
         const { fullname, email, username, password, adminkey } = req.body;
@@ -74,6 +75,9 @@ const register = async (req, res) => {
                 message: "registering user not created"
             })
         }
+        console.log("reached emit at register");
+        io.emit("newUserRegistered", createduser);
+        console.log("sent emit from register")
         return res.status(200).json({
             user: createduser, message: "User created successfully",
             role: user.role
@@ -83,6 +87,7 @@ const register = async (req, res) => {
 
     catch (error) {
         console.log(`error at reistering the user ${error}`);
+
         return res.status(500).json({ message: "Server error occurred during registration." });
     }
 
@@ -151,6 +156,7 @@ const login = async (req, res) => {
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days expiry (IMPORTANT)
             })
             .json({
+                success: true,
                 message: "successful login",
                 refreshToken,
                 acesstoken,
@@ -476,7 +482,7 @@ const softdelete = async (req, res) => {
         res.status(500).json({ message: "Server error: Could not delete profile." });
     }
 }
-export { register, login, logout, reaccesstoken, getCurrentUser,getAllUser, changePassword, updateuserprofile, promoteUser, softdelete }
+export { register, login, logout, reaccesstoken, getCurrentUser, getAllUser, changePassword, updateuserprofile, promoteUser, softdelete }
 
 
 

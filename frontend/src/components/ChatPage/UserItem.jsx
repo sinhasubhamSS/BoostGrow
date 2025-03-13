@@ -20,13 +20,13 @@ import { useDispatch } from 'react-redux'
 function UserItem({ user, onlineUsersSet }) {
     const dispatch = useDispatch();
     const isOnline = onlineUsersSet.has(user._id);
-
+    
     return (
         <div className="user__container" onClick={() => dispatch(setselectedUser(user))}>
             {/* Avatar container with relative positioning */}
             <div className="avatar-container">
                 <img
-                    src={user.ProfilePicture || `https://ui-avatars.com/api/?name=${user.username.charAt(0)}`}
+                    src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.username.charAt(0)}`}
                     alt=""
                     className="avatar__useritem"
                 />

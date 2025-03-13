@@ -10,7 +10,7 @@ const userSchema = new Schema({
     },
     fullname: {
         type: String,
-        unique: true,
+
         lowercase: true,
         trim: true,
         required: true
@@ -45,23 +45,43 @@ const userSchema = new Schema({
     privacy: {
         type: String,
         enum: ['public', 'private'],
-        default: 'public'
+        default: 'private'
 
     },
     refreshToken: {
         type: String,
     },
+
     //yaha sa expand kar rha hu 
-    friends: [{
-        type: Schema.Types.ObjectId,
-        ref: "User"
-    }],
+
+    //followers system
+    followers: [{
+        type: Schema.Types.ObjectId, ref: "User"
+    }], // Who follows this user
+    following: [{
+        type: Schema.Types.ObjectId, ref: "User"
+    }], // Who this user follows
+
+
+
+    friends: [{ type: Schema.Types.ObjectId, ref: "User" }], // Friends List
     friendRequests: [{
-        type: Schema.Types.ObjectId,
-        ref: "User"
-    }],
+        sender: {  // ✅ ObjectId और साथ में status store करें
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true
+        },
+        status: {
+            type: String,
+            enum: ['pending', 'accepted', 'rejected'],
+            default: 'pending'
+        }
+    }]// Pending Friend Requests
+
+
 }, {
     timestamps: true
 });
+userSchema.index({ friends: 1 })
 
 export const User = mongoose.model("User", userSchema);

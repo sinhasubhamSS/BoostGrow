@@ -4,7 +4,7 @@ import React from 'react'
 export const checkprofilemode = async (req, res, next) => {
     try {
         const senderId = req.user._id;
-        const receiverId = req.body;
+        const {receiverId} = req.body;
         if (!receiverId) {
             return res.status(400).json({ message: "no receiver id present" })
         }

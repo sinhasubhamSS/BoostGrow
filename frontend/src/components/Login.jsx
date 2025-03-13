@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from 'react-router-dom';
 import styles from "./Csscomponents/login.module.css";
 import { useDispatch } from "react-redux";
-import { setloggedinuser, loginUser } from "../Redux/userSlice"
+import { setloggedinuser, loginUser, fetchUsers } from "../Redux/userSlice"
 import toast from "react-hot-toast"
 
 
@@ -16,13 +16,13 @@ function Login() {
   const onSubmit = async (data) => {
     const result = await dispatch(loginUser(data));
     console.log("Full Login API Response:", result.payload);;
-    if (result.payload) {
+    if (result.payload?.success) {
       toast.success("user logged in successfully!");
       dispatch(setloggedinuser(result.payload.user))
-      console.log("Dispatched LoggedInUser:", result.payload.user);
+      dispatch(fetchUsers())
       navigate("/")
     } else {
-      toast.error(result.error?.message || "Something went wrong!");;
+      toast.error(result.payload?.message || "Something went wrong!");;
     }
   }
 

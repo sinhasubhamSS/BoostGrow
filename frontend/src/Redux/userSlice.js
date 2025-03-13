@@ -25,6 +25,7 @@ export const fetchUsers = createAsyncThunk('users/fetchUsers',
   async (_, thunkAPI) => {
     try {
       const response = await api.get("/api/users/getotheruser")
+      console.log("bakckend respone", response.data.users);
       return response.data.users
 
     } catch (error) {
@@ -40,7 +41,7 @@ const userSlice = createSlice({
     otherUsers: [],
     selectedUser: null,
     loggedinuser: null,
-    onlineUsers:[],
+    onlineUsers: [],
 
   },
   reducers: {
