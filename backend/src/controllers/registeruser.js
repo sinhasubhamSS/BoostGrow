@@ -482,6 +482,7 @@ const softdelete = async (req, res) => {
         res.status(500).json({ message: "Server error: Could not delete profile." });
     }
 }
+
 export { register, login, logout, reaccesstoken, getCurrentUser, getAllUser, changePassword, updateuserprofile, promoteUser, softdelete }
 
 

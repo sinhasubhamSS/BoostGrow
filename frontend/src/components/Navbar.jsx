@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Logout from './Logout';
 import "./Csscomponents/navbar.css";
+import SearchUsers from './SearchUsers';
 
 function Navbar() {
   const user = useSelector((state) => state.user.loggedinuser); // Redux state se user fetch kar rahe hain
@@ -20,14 +21,14 @@ function Navbar() {
         setDropDownOpen(false)
       }
     }
-    if(dropDownOpen){
-      document.addEventListener('mousedown',handleClickOutside);
+    if (dropDownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
 
-    }else{
-      document.addEventListener('mousedown',handleClickOutside);
-      
+    } else {
+      document.addEventListener('mousedown', handleClickOutside);
+
     }
-    return()=>document.removeEventListener('mousedown',handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [dropDownOpen])
 
   return (
@@ -52,6 +53,10 @@ function Navbar() {
             <Link to="/contact" className='nav__link'>Contact</Link>
           </li>
         </ul>
+        {/* ✅ Search Box Navbar ke andar */}
+        <div className="nav-search">
+          <SearchUsers />
+        </div>
         <div className="nav--btns">
           {user ? (
             <>
@@ -63,6 +68,7 @@ function Navbar() {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" height="1.5em" width="1.5em">
                       <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z" />
                     </svg>
+
                   )}
                 </button>
                 {

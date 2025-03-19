@@ -3,20 +3,30 @@ import { fetchUsers } from '../../Redux/userSlice';
 import "./userlist.css";
 import { useDispatch, useSelector } from "react-redux";
 import UserItem from './UserItem';
+import { messagedUsers } from '../../Redux/userSlice';
 
 function UserList({ searchUser }) {
     const dispatch = useDispatch();
-    const { otherUsers, loading, error, onlineUsers } = useSelector((state) => state.user);
+    const { messagedusers, loading, error, onlineUsers } = useSelector((state) => state.user);
+
     const socket = useSelector((state) => state.socket.instance);
 
     // ✅ Move hooks to the top to prevent rendering issues
     const onlineUsersSet = useMemo(() => new Set(onlineUsers), [onlineUsers]);
+    useEffect(() => {
+        if (messagedusers.length === 0) { // ✅ Prevent duplicate API calls
+            dispatch(messagedUsers());
+        }
+    }, [dispatch, messagedusers.length]);
+
 
     const filteredUsers = useMemo(() => {
-        return otherUsers?.filter((user) =>
+        if(!messagedusers || !messagedusers.length===0)return[];
+        return messagedusers?.filter((user) =>
             user.username.toLowerCase().includes(searchUser.toLowerCase())
         );
-    }, [otherUsers, searchUser]);
+    }, [messagedusers,searchUser]);
+    console.log("Filtered Users:", filteredUsers);
 
     useEffect(() => {
         if (!socket) return; // ✅ Prevents running when socket is null

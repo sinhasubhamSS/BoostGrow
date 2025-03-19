@@ -5,7 +5,7 @@ import { authverify } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 router.route("/follow/:userIdToFollow").post(authverify, followUser)
-router.route("/unfollow").delete(authverify, unfollowUser)
+router.route("/unfollow/:userIdToUnfollow").delete(authverify, unfollowUser)
 router.route("/accept-friend-request").post(authverify, acceptFollowRequest)
 router.route("/reject-friend-request").delete(authverify, rejectFriendRequest)
 router.route("/friendlist").get(authverify, getFriendList)

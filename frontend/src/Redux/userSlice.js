@@ -32,6 +32,17 @@ export const fetchUsers = createAsyncThunk('users/fetchUsers',
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch users");
     }
   })
+export const messagedUsers = createAsyncThunk('users/messagedUsers', async (_, thunkAPI) => {
+  try {
+    console.log("reached messageduderd section");
+    const response = await api.get("api/users/chat/chatusers")
+    console.log("backend response", response.data);
+    return response.data.users;
+  } catch (error) {
+    console.log("error at line 41 messagedusers");
+    return thunkAPI.rejectWithValue(error.message);
+  }
+})
 const userSlice = createSlice({
   name: "user",
   initialState: {
@@ -42,6 +53,7 @@ const userSlice = createSlice({
     selectedUser: null,
     loggedinuser: null,
     onlineUsers: [],
+    messagedusers: [],
 
   },
   reducers: {
@@ -89,7 +101,12 @@ const userSlice = createSlice({
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(messagedUsers.fulfilled, (state, action) => {
+
+        state.messagedusers = action.payload || []; // ✅ Ensure it updates state
+        console.log("🟢 Redux Store Updated:", state.messagedusers); // 
+      })
   },
 });
 export const { setselectedUser, setloggedinuser, setonlineUsers } = userSlice.actions;
