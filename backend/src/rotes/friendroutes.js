@@ -13,7 +13,7 @@ router.route("/cancel-follow-request").delete(authverify, cancelFollowRequest)
 router.route("/mutual-friends").get(authverify, getMutualFriends)
 router.route("/search-user").get(authverify, searchUsers)
 router.route("/follow-status").get(authverify, checkFollowStatus)
-router.route("/follower-followiing").get(authverify, getFollowerAndFollowing)
+router.route("/followerfollowing/:userId").get(authverify, getFollowerAndFollowing)
 
 
 export default router

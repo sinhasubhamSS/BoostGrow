@@ -5,7 +5,7 @@ import styles from "./Csscomponents/login.module.css";
 import { useDispatch } from "react-redux";
 import { setloggedinuser, loginUser, fetchUsers } from "../Redux/userSlice"
 import toast from "react-hot-toast"
-
+import { followerandfollowing } from '../Redux/friendSlice';
 
 
 function Login() {
@@ -20,6 +20,8 @@ function Login() {
       toast.success("user logged in successfully!");
       dispatch(setloggedinuser(result.payload.user))
       dispatch(fetchUsers())
+
+      dispatch(followerandfollowing(result.payload.user._id));
       navigate("/")
     } else {
       toast.error(result.payload?.message || "Something went wrong!");;

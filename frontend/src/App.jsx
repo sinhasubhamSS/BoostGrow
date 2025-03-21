@@ -10,6 +10,7 @@ import Logout from './components/Logout'
 import { Toaster } from "react-hot-toast";
 import Chatpage from './pages/Chatpage'
 import useSocket from './services/Socket'
+import Profilepage from './pages/Profilepage'
 
 
 
@@ -23,6 +24,8 @@ const router = createBrowserRouter
 
                     <Route path='Todopage' element={<Todopage />} />
                     <Route path='Chatpage' element={<Chatpage />} />
+                    {/* <Route path="profile" element={<Profilepage />} /> */}
+                    <Route path='profile/:userId' element={<Profilepage />} />
 
 
 
@@ -36,7 +39,7 @@ const router = createBrowserRouter
             </>
         ))
 function App() {
-
+    useSocket()
 
     return (
         <>

@@ -48,16 +48,6 @@
   object-fit: cover;
 }
 
-.follow__btn {
-  margin-left: auto;
-  background: #3897f0;
-  color: white;
-  border: none;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-}
 
 .no__result {
   padding: 12px;

@@ -14,18 +14,19 @@ function UserList({ searchUser }) {
     // ✅ Move hooks to the top to prevent rendering issues
     const onlineUsersSet = useMemo(() => new Set(onlineUsers), [onlineUsers]);
     useEffect(() => {
-        if (messagedusers.length === 0) { // ✅ Prevent duplicate API calls
+        if (!messagedusers || messagedusers.length === 0) {
             dispatch(messagedUsers());
         }
-    }, [dispatch, messagedusers.length]);
+    }, [dispatch, messagedusers]); // ✅ Remove `.length` to prevent errors
 
+ 
 
     const filteredUsers = useMemo(() => {
-        if(!messagedusers || !messagedusers.length===0)return[];
+        if (!messagedusers || !messagedusers.length === 0) return [];
         return messagedusers?.filter((user) =>
             user.username.toLowerCase().includes(searchUser.toLowerCase())
         );
-    }, [messagedusers,searchUser]);
+    }, [messagedusers, searchUser]);
     console.log("Filtered Users:", filteredUsers);
 
     useEffect(() => {

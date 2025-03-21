@@ -3,10 +3,10 @@ import React, { useState } from 'react'
 import "./pagescss/chatpage.css"
 import SideBar from '../components/ChatPage/SideBar'
 import Chatwindow from '../components/ChatPage/Chatwindow'
-import useSocket from '../services/Socket'
+
 
 function Chatpage() {
-  useSocket()
+
   return (
     <>
       <div className="chatpage">

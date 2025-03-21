@@ -3,6 +3,7 @@
 
 import { json } from "express";
 import { User } from "../models/user.models.js";
+import { io } from "../socket.js";
 
 // sendFriendRequest (friend request bhejne ke liye)
 // acceptFriendRequest (friend request ko accept karne ke liye)
@@ -10,60 +11,140 @@ import { User } from "../models/user.models.js";
 // followUser (user ko follow karne ke liye)
 // unfollowUser (user ko unfollow karne ke liye)
 
+// const followUser = async (req, res) => {
+//     const loggedInUserId = req.user._id;
+//     const { userIdToFollow } = req.params;
+
+
+//     try {
+//         //step 1 make sure user does not folow themselves
+//         if (loggedInUserId.toString() === userIdToFollow.toString()) {
+//             return res.status(400).json({ message: "You cannot follow yourself" })
+//         }
+//         //step 2 : find the user whom you want to follow 
+//         const userToFollow = await User.findById(userIdToFollow)
+//         if (!userToFollow) {
+//             return res.status(404).json({ message: "User not found" });
+//         }
+//         //check if user alrady follows 
+//         // const alreadyFollowing=userToFollow.friends.includes(loggedInUserId) this will have tc O of n
+//         //so lets use mongodb query
+//         // Instead of using .includes() (O(N)), we use MongoDB's `exists()` for better performance (O(1)).
+//         // Instead of using .includes() (O(N)), we use MongoDB's `exists()` for better performance (O(1)).
+//         const alreadyFollowing = await User.exists({
+//             _id: userIdToFollow,
+//             friends: loggedInUserId
+//         })//so in this function we are passing the id of person we want to follow and then check if at friends the person who wants to follow has the id already present or not
+//         if (alreadyFollowing) {
+//             return res.status(400).json({ message: "You are already following " })
+//         }
+//         //step 4 if account is privvate send friend request
+//         //some() -iska use  hai ki agar array mein kuch ek item hai aur usko satisfy karta hai to true return karna 
+//         if (userToFollow.privacy === "private") {
+//             const existingRequest = userToFollow.friendRequests.find(
+//                 (request) => request.sender.toString() === loggedInUserId.toString()
+//             );
+
+//             if (existingRequest) {
+//                 return res.status(400).json({ message: "Friend request already sent!" });
+//             }
+
+//             userToFollow.friendRequests.push({ sender: loggedInUserId, status: "pending" });
+//             await userToFollow.save();
+
+//             return res.status(200).json({ message: "Friend request sent!" });
+//         }
+//         //if account is public ,follow directly
+//         userToFollow.friends.push(loggedInUserId);
+//         await userToFollow.save();
+//         return res.status(200).json({
+//             message: "User followed successfully!",
+//             userId: userIdToFollow
+//         });
+
+
+//     } catch (error) {
+//         return res.status(500).json({ message: "Something went wrong!", error });
+
+//     }
+// };
+
+
 const followUser = async (req, res) => {
-    const loggedInUserId = req.user._id;
+    const loggedInUserId = req.user._id.toString();
     const { userIdToFollow } = req.params;
 
-
     try {
-        //step 1 make sure user does not folow themselves
-        if (loggedInUserId.toString() === userIdToFollow.toString()) {
-            return res.status(400).json({ message: "You cannot follow yourself" })
+        if (loggedInUserId === userIdToFollow) {
+            return res.status(400).json({ message: "You cannot follow yourself" });
         }
-        //step 2 : find the user whom you want to follow 
-        const userToFollow = await User.findById(userIdToFollow)
-        if (!userToFollow) {
+
+        const [userToFollow, loggedInUser] = await Promise.all([
+            User.findById(userIdToFollow),
+            User.findById(loggedInUserId)
+        ]);
+
+
+        if (!userToFollow || !loggedInUser) {
             return res.status(404).json({ message: "User not found" });
         }
-        //check if user alrady follows 
-        // const alreadyFollowing=userToFollow.friends.includes(loggedInUserId) this will have tc O of n
-        //so lets use mongodb query
-        // Instead of using .includes() (O(N)), we use MongoDB's `exists()` for better performance (O(1)).
-        // Instead of using .includes() (O(N)), we use MongoDB's `exists()` for better performance (O(1)).
-        const alreadyFollowing = await User.exists({
-            _id: userIdToFollow,
-            friends: loggedInUserId
-        })//so in this function we are passing the id of person we want to follow and then check if at friends the person who wants to follow has the id already present or not
-        if (alreadyFollowing) {
-            return res.status(400).json({ message: "You are already following " })
+
+        // Check if already following
+        if (userToFollow.followers.includes(loggedInUserId)) {
+            return res.status(200).json({
+                message: `You are already following ${userToFollow.username}`
+            });
         }
-        //step 4 if account is privvate send friend request
-        //some() -iska use  hai ki agar array mein kuch ek item hai aur usko satisfy karta hai to true return karna 
+
         if (userToFollow.privacy === "private") {
+            console.log("🔒 Private Account - Sending Follow Request...");
             const existingRequest = userToFollow.friendRequests.find(
-                (request) => request.sender.toString() === loggedInUserId.toString()
+                (request) => request.sender.toString() === loggedInUserId
             );
 
             if (existingRequest) {
-                return res.status(400).json({ message: "Friend request already sent!" });
+                return res.status(400).json({
+                    message: "Follow request already sent!"
+                });
             }
 
-            userToFollow.friendRequests.push({ sender: loggedInUserId, status: "pending" });
+            userToFollow.friendRequests.push({
+                sender: loggedInUserId,
+                status: "pending"
+            });
             await userToFollow.save();
-
-            return res.status(200).json({ message: "Friend request sent!" });
+            return res.status(200).json({
+                message: "Follow request sent!",
+                requestId: userToFollow.friendRequests[userToFollow.friendRequests.length - 1]._id
+            });
         }
-        //if account is public ,follow directly
-        userToFollow.friends.push(loggedInUserId);
-        await userToFollow.save();
-        return res.status(200).json({ message: "User followed successfully!" });
 
+        // ✅ Add user to 'following' and 'followers'
+        loggedInUser.following.push(userIdToFollow);
+        userToFollow.followers.push(loggedInUserId);
+
+        // ✅ Save both users
+        await loggedInUser.save();
+        await userToFollow.save();
+        io.emit("follow", {
+            targetUserId: userIdToFollow,
+            newFollower: loggedInUserId
+        });
+        return res.status(200).json({
+            message: `Successfully followed ${userToFollow.username}`,
+            userId: userIdToFollow
+        });
 
     } catch (error) {
-        return res.status(500).json({ message: "Something went wrong!", error });
-
+        console.error("❌ Follow user error:", error);
+        return res.status(500).json({
+            message: "Something went wrong!",
+            error: error.message
+        });
     }
 };
+
+
 const cancelFollowRequest = async (req, res) => {
     const loggedInUserId = req.user._id;
     const { receiverId } = req.body;
@@ -84,41 +165,55 @@ const cancelFollowRequest = async (req, res) => {
 
 };
 const unfollowUser = async (req, res) => {
-    const loggedInUserId = req.user._id;
+    const loggedInUserId = req.user._id.toString();
     const { userIdToUnfollow } = req.params;
+
     try {
-        if (loggedInUserId.toString() === userIdToUnfollow.toString()) {
-            return res.status(400).json({ message: "You cannot unfollow yourself" })
+        if (loggedInUserId === userIdToUnfollow) {
+            return res.status(400).json({ message: "You cannot unfollow yourself" });
         }
-        //check if users to unfollow exist 
+
         const userToUnfollow = await User.findById(userIdToUnfollow);
-        if (!userToUnfollow) {
+        const loggedInUser = await User.findById(loggedInUserId);
+
+        if (!userToUnfollow || !loggedInUser) {
             return res.status(404).json({ message: "User not found" });
         }
-        //step 3 check if logged in user is actually following
-        const isFollowing = await User.exists({
-            _id: loggedInUserId,
-            friends: userIdToUnfollow
-        })
-        if (!isFollowing) {
-            return res.status(400).json({ message: "You are not following this user" })
+
+        // Check if already following
+        if (!loggedInUser.following.includes(userIdToUnfollow)) {
+            return res.status(400).json({ message: "You are not following this user" });
         }
-        //step 4
-        //removee from both friendship
-        await User.updateOne({ _id: loggedInUserId },
-            { $pull: { friends: userIdToUnfollow } });
 
-        await User.updateOne({ _id: userIdToUnfollow },
-            { $pull: { friends: loggedInUserId } }
-        );
 
-        return res.status(200).json({ message: "User unfollowed successfully!" });
+        // ✅ Remove from 'following' list
+        loggedInUser.following = loggedInUser.following.filter(id => id.toString() !== userIdToUnfollow);
+
+        // ✅ Remove from 'followers' list
+        userToUnfollow.followers = userToUnfollow.followers.filter(id => id.toString() !== loggedInUserId);
+
+        // ✅ Remove from 'friends' list (if they were friends)
+        loggedInUser.friends = loggedInUser.friends.filter(id => id.toString() !== userIdToUnfollow);
+        userToUnfollow.friends = userToUnfollow.friends.filter(id => id.toString() !== loggedInUserId);
+
+        // ✅ Save changes
+        await loggedInUser.save();
+        await userToUnfollow.save();
+        io.emit("unfollow", {
+            targetUserId: userIdToUnfollow, // जिसका profile देखा जा रहा
+            unfollowerId: loggedInUserId    // जो unfollow कर रहा
+        });
+        return res.status(200).json({
+            message: `Successfully unfollowed ${userToUnfollow.username}`,
+            userId: userIdToUnfollow
+        });
 
     } catch (error) {
-        return res.status(500).json({ message: "Something went wrong at else block of unfollow user!", error });
-
+        console.error("❌ Unfollow user error:", error);
+        return res.status(500).json({ message: "Something went wrong!", error: error.message });
     }
-}
+};
+
 const acceptFollowRequest = async (req, res) => {
     const loggedInUserId = req.user._id;
     const { senderId } = req.body;
@@ -237,11 +332,14 @@ const getFollowerAndFollowing = async (req, res) => {
             select: "username profilePicture"
         })
         if (!user) {
-            return res.status(200).json({
-                followers: user.followers,
-                following: user.following
-            })
+            return res.status(404).json({
+                message: "User not found"
+            });
         }
+        return res.status(200).json({
+            followers: user.followers,
+            following: user.following
+        })
     } catch (error) {
         return res.status(500).json({ message: "Something went wrong!", error });
     }
@@ -264,4 +362,11 @@ const checkFollowStatus = async (req, res) => {
     }
 };
 
-export { followUser, cancelFollowRequest, unfollowUser, acceptFollowRequest, rejectFriendRequest, getFriendList, getMutualFriends, searchUsers, getFollowerAndFollowing, checkFollowStatus }
+export {
+    followUser, cancelFollowRequest,
+    unfollowUser, acceptFollowRequest,
+    rejectFriendRequest, getFriendList,
+    getMutualFriends, searchUsers,
+    getFollowerAndFollowing,
+    checkFollowStatus
+}

@@ -7,17 +7,20 @@ import storage from "redux-persist/lib/storage";
 import { persistStore, persistReducer } from "redux-persist";
 import { combineReducers } from "redux";
 import messageReducer from "./messageSlice"
+import friendReducer from "./friendSlice"
+import { enableMapSet } from 'immer';
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user"], // ✅ Sirf `user` state persist hogi
+    whitelist: ["user", "friend"], // ✅ Sirf `user` state persist hogi
 };
-
+enableMapSet();
 const rootReducer = combineReducers({
     user: userReducer,
     todo: todoReducer,
     message: messageReducer,
     socket: socketReducer,
+    friend: friendReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
