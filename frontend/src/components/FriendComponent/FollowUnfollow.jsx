@@ -9,10 +9,12 @@ import "./friendcss/followunfollow.css"
 const FollowUnfollow = ({ userIdToFollow }) => {
     const dispatch = useDispatch();
     const socket = useSelector(state => state.socket.instance); // ✅ Redux se socket le rahe hain
-    const following = useSelector(state => state.friend.following);
-const loggedInUserId = useSelector(state => state.user.loggedinuser?._id);
-    const isFollowing = following.includes(userIdToFollow);
 
+    const loggedInUserId = useSelector(state => state.user.loggedinuser?._id);
+    const loggedInUserFollowing = useSelector(state => state.friend.loggedInUserFollowing);
+
+    console.log("following of me", loggedInUserFollowing);
+    const isFollowing = loggedInUserFollowing?.includes(userIdToFollow);
     const handleFollowUnfollow = () => {
         if (isFollowing) {
             dispatch(unfollowUser(userIdToFollow));
