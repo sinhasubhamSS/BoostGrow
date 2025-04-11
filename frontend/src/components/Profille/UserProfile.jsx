@@ -5,7 +5,7 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import "./userprofile.css";
 import FollowUnfollow from '../FriendComponent/FollowUnfollow';
-import { addFollower, followerandfollowing, removeFollower, addToFollowing, removeFromFollowing } from '../../Redux/friendSlice';
+import { addFollower, followerandfollowing, removeFollower, addToFollowing, removeFromFollowing, removeFromCurrentProfileFollowing, addToCurrentProfileFollowing } from '../../Redux/friendSlice';
 
 
 function UserProfile({ userId }) {
@@ -29,34 +29,35 @@ function UserProfile({ userId }) {
   useEffect(() => {
     if (!socket) return;
 
-    // Follow Event
+    // Existing listeners for target user updates
     socket.on("follow", (data) => {
-      console.log("Follow event received:", data);
-      if (data.targetUserId === userId) { // सिर्फ current profile के updates
-        // dispatch(followerandfollowing(userId));
+      if (data.targetUserId === userId) {
         dispatch(addFollower(data.newFollower));
-        // ✅ Check Redux update after delay
-      }
-      if (data.loggedInUserId === loggedInUserId) {
-        dispatch(addToFollowing(data.targetUserId)); // ✅ Directly use action
       }
     });
 
-    // Unfollow Event
     socket.on("unfollow", (data) => {
-      console.log("Unfollow event received:", data);
       if (data.targetUserId === userId) {
-        // dispatch(followerandfollowing(userId));
         dispatch(removeFollower(data.unfollowerId));
       }
-      if (data.loggedInUserId === loggedInUserId) {
-        dispatch(removeFromFollowing(data.targetUserId)); // ✅ Directly use action
+    });
+
+    // ✅ New listener for follower's following updates
+    socket.on("update_profile_following", (data) => {
+      // यदि current profile वही है जिसका following update होना है
+      if (data.profileUserId === userId) {
+        if (data.type === "follow") {
+          dispatch(addToCurrentProfileFollowing(data.targetUserId));
+        } else {
+          dispatch(removeFromCurrentProfileFollowing(data.targetUserId));
+        }
       }
     });
 
     return () => {
       socket.off("follow");
       socket.off("unfollow");
+      socket.off("update_profile_following");
     };
   }, [socket, userId, dispatch]);
 

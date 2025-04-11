@@ -131,6 +131,12 @@ const followUser = async (req, res) => {
             newFollower: loggedInUserId,  // जिसने follow किया (current user)
             loggedInUserId: loggedInUserId // ✅ नई field जोड़ें
         });
+        io.emit("update_profile_following", {
+            type: "follow",
+            profileUserId: loggedInUserId,  // जिसका following update होगा
+            targetUserId: userIdToFollow    // जिसे follow किया
+        });
+
         return res.status(200).json({
             message: `Successfully followed ${userToFollow.username}`,
             userId: userIdToFollow
@@ -224,7 +230,11 @@ const unfollowUser = async (req, res) => {
             unfollowerId: loggedInUserId,
             loggedInUserId: loggedInUserId // ✅ नई field
         });
-
+        io.emit("update_profile_following", {
+            type: "unfollow",
+            profileUserId: loggedInUserId,   // जिसका following update होगा
+            targetUserId: userIdToUnfollow   // जिसे unfollow किया
+        });
         console.log(`✅ Successfully unfollowed ${userToUnfollow.username}`);
 
         return res.status(200).json({

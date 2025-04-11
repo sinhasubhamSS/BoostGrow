@@ -88,9 +88,17 @@ const friendSlice = createSlice({
                 id => id !== action.payload
             );
         },
-        // updateLoggedInFollowing: (state, action) => {
-        //     state.loggedInUserFollowing = action.payload; // ✅ पूरी array replace करें
-        // }
+        addToCurrentProfileFollowing: (state, action) => {
+            if (!state.currentProfileFollowing.includes(action.payload)) {
+                state.currentProfileFollowing.push(action.payload);
+            }
+        },
+        removeFromCurrentProfileFollowing: (state, action) => {
+            state.currentProfileFollowing = state.currentProfileFollowing.filter(
+                id => id !== action.payload
+            );
+        }
+
     },
     extraReducers: (builder) => {
         builder
@@ -149,7 +157,8 @@ export const {
     addFollower,
     removeFollower,
     addToFollowing,
-    removeFromFollowing,
+    removeFromFollowing, addToCurrentProfileFollowing,
+    removeFromCurrentProfileFollowing
 
 } = friendSlice.actions;
 
