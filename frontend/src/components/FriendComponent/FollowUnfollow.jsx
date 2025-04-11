@@ -21,7 +21,8 @@ const FollowUnfollow = ({ userIdToFollow }) => {
             // socket?.emit("unfollow", { userId: userIdToFollow }); // ✅ WebSocket Emit
             socket?.emit("unfollow", {
                 targetUserId: userIdToFollow,
-                unfollowerId: loggedInUserId
+                unfollowerId: loggedInUserId,
+                loggedInUserId: loggedInUserId
             });
 
         } else {
@@ -29,8 +30,8 @@ const FollowUnfollow = ({ userIdToFollow }) => {
             // socket?.emit("follow", { userId: userIdToFollow }); // ✅ WebSocket Emit
             socket?.emit("follow", {
                 targetUserId: userIdToFollow,
-
-                newFollower: loggedInUserId
+                newFollower: loggedInUserId,
+                loggedInUserId: loggedInUserId
             });
 
         }

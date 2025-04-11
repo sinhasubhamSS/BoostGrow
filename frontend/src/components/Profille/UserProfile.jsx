@@ -5,7 +5,7 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import "./userprofile.css";
 import FollowUnfollow from '../FriendComponent/FollowUnfollow';
-import { addFollower, followerandfollowing, removeFollower } from '../../Redux/friendSlice';
+import { addFollower, followerandfollowing, removeFollower, addToFollowing, removeFromFollowing } from '../../Redux/friendSlice';
 
 
 function UserProfile({ userId }) {
@@ -36,8 +36,9 @@ function UserProfile({ userId }) {
         // dispatch(followerandfollowing(userId));
         dispatch(addFollower(data.newFollower));
         // ✅ Check Redux update after delay
-
-
+      }
+      if (data.loggedInUserId === loggedInUserId) {
+        dispatch(addToFollowing(data.targetUserId)); // ✅ Directly use action
       }
     });
 
@@ -47,7 +48,9 @@ function UserProfile({ userId }) {
       if (data.targetUserId === userId) {
         // dispatch(followerandfollowing(userId));
         dispatch(removeFollower(data.unfollowerId));
-
+      }
+      if (data.loggedInUserId === loggedInUserId) {
+        dispatch(removeFromFollowing(data.targetUserId)); // ✅ Directly use action
       }
     });
 

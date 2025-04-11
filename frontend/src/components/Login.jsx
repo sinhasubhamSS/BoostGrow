@@ -3,9 +3,8 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from 'react-router-dom';
 import styles from "./Csscomponents/login.module.css";
 import { useDispatch } from "react-redux";
-import { setloggedinuser, loginUser, fetchUsers } from "../Redux/userSlice"
+import { setloggedinuser, loginUser, fetchUsers, messagedUsers } from "../Redux/userSlice"
 import toast from "react-hot-toast"
-import { myprofile } from '../Redux/friendSlice';
 
 
 function Login() {
@@ -21,7 +20,6 @@ function Login() {
       dispatch(setloggedinuser(result.payload.user))
       dispatch(fetchUsers())
 
-      dispatch(myprofile(result.payload.user._id));
       navigate("/")
     } else {
       toast.error(result.payload?.message || "Something went wrong!");;

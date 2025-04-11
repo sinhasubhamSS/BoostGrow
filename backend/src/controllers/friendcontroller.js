@@ -127,8 +127,9 @@ const followUser = async (req, res) => {
         await loggedInUser.save();
         await userToFollow.save();
         io.emit("follow", {
-            targetUserId: userIdToFollow,
-            newFollower: loggedInUserId
+            targetUserId: userIdToFollow, // जिसे follow किया
+            newFollower: loggedInUserId,  // जिसने follow किया (current user)
+            loggedInUserId: loggedInUserId // ✅ नई field जोड़ें
         });
         return res.status(200).json({
             message: `Successfully followed ${userToFollow.username}`,
@@ -168,41 +169,64 @@ const unfollowUser = async (req, res) => {
     const loggedInUserId = req.user._id.toString();
     const { userIdToUnfollow } = req.params;
 
+    console.log("📩 Logged In User ID:", loggedInUserId);
+    console.log("📩 User ID to Unfollow:", userIdToUnfollow);
+
     try {
+        // 🛑 Self-unfollow check
         if (loggedInUserId === userIdToUnfollow) {
+            console.log("🚫 User tried to unfollow themselves");
             return res.status(400).json({ message: "You cannot unfollow yourself" });
         }
 
+        // ✅ Fetch both users
         const userToUnfollow = await User.findById(userIdToUnfollow);
         const loggedInUser = await User.findById(loggedInUserId);
 
+        // 🧪 Check if both users exist
         if (!userToUnfollow || !loggedInUser) {
+            console.log("❌ One of the users not found", {
+                userToUnfollowExists: !!userToUnfollow,
+                loggedInUserExists: !!loggedInUser
+            });
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Check if already following
-        if (!loggedInUser.following.includes(userIdToUnfollow)) {
+        // 🧪 Log following list
+        console.log("📋 LoggedInUser Following List:", loggedInUser.following.map(id => id.toString()));
+
+        // 🛑 Already not following check (with debug)
+        const isFollowing = loggedInUser.following.some(id => id.toString() === userIdToUnfollow);
+        console.log("🔍 Is Following:", isFollowing);
+
+        if (!isFollowing) {
+            console.log("🚫 User is not following the one they tried to unfollow");
             return res.status(400).json({ message: "You are not following this user" });
         }
 
-
-        // ✅ Remove from 'following' list
+        // ✅ Proceed to unfollow
         loggedInUser.following = loggedInUser.following.filter(id => id.toString() !== userIdToUnfollow);
-
-        // ✅ Remove from 'followers' list
         userToUnfollow.followers = userToUnfollow.followers.filter(id => id.toString() !== loggedInUserId);
 
-        // ✅ Remove from 'friends' list (if they were friends)
         loggedInUser.friends = loggedInUser.friends.filter(id => id.toString() !== userIdToUnfollow);
         userToUnfollow.friends = userToUnfollow.friends.filter(id => id.toString() !== loggedInUserId);
 
-        // ✅ Save changes
+        console.log("✅ Unfollow logic done, saving users...");
+
         await loggedInUser.save();
         await userToUnfollow.save();
+
+        console.log("💾 Changes saved to database");
+
+        // 🔔 Emit event
         io.emit("unfollow", {
-            targetUserId: userIdToUnfollow, // जिसका profile देखा जा रहा
-            unfollowerId: loggedInUserId    // जो unfollow कर रहा
+            targetUserId: userIdToUnfollow,
+            unfollowerId: loggedInUserId,
+            loggedInUserId: loggedInUserId // ✅ नई field
         });
+
+        console.log(`✅ Successfully unfollowed ${userToUnfollow.username}`);
+
         return res.status(200).json({
             message: `Successfully unfollowed ${userToUnfollow.username}`,
             userId: userIdToUnfollow
@@ -213,6 +237,7 @@ const unfollowUser = async (req, res) => {
         return res.status(500).json({ message: "Something went wrong!", error: error.message });
     }
 };
+
 
 const acceptFollowRequest = async (req, res) => {
     const loggedInUserId = req.user._id;

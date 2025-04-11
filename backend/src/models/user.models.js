@@ -45,7 +45,7 @@ const userSchema = new Schema({
     privacy: {
         type: String,
         enum: ['public', 'private'],
-        default: 'private'
+        default: 'public'
 
     },
     refreshToken: {

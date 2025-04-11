@@ -12,7 +12,7 @@ import { enableMapSet } from 'immer';
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user", "friend"], // ✅ Sirf `user` state persist hogi
+    whitelist: ["user"], // ✅ Sirf `user` state persist hogi
 };
 enableMapSet();
 const rootReducer = combineReducers({

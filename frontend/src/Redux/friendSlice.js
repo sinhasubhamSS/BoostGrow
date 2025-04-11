@@ -57,13 +57,15 @@ export const myprofile = createAsyncThunk(
     }
 );
 
-// friendSlice.js
+
 const friendSlice = createSlice({
     name: "friend",
     initialState: {
-        loggedInUserFollowing: [],    // Users the logged-in user follows
-        currentProfileFollowers: [],   // Followers of the viewed profile
-        currentProfileFollowing: []    // Users the viewed profile follows
+        loggedInUserFollowing: [],
+        currentProfileFollowers: [],
+        currentProfileFollowing: [],
+        status: "idle",
+        error: null
     },
     reducers: {
         addFollower: (state, action) => {
@@ -72,46 +74,83 @@ const friendSlice = createSlice({
             }
         },
         removeFollower: (state, action) => {
-            state.currentProfileFollowers = state.currentProfileFollowers.filter(id => id !== action.payload);
+            state.currentProfileFollowers = state.currentProfileFollowers.filter(
+                id => id !== action.payload
+            );
         },
-        // Add reducers to update loggedInUserFollowing via socket if needed
-        updateLoggedInFollowing: (state, action) => {
-            state.loggedInUserFollowing = action.payload.following;
-        }
+        addToFollowing: (state, action) => {
+            if (!state.loggedInUserFollowing.includes(action.payload)) {
+                state.loggedInUserFollowing.push(action.payload);
+            }
+        },
+        removeFromFollowing: (state, action) => {
+            state.loggedInUserFollowing = state.loggedInUserFollowing.filter(
+                id => id !== action.payload
+            );
+        },
+        // updateLoggedInFollowing: (state, action) => {
+        //     state.loggedInUserFollowing = action.payload; // ✅ पूरी array replace करें
+        // }
     },
     extraReducers: (builder) => {
         builder
-            // Update followUser.fulfilled
+            .addCase(followUser.pending, (state) => {
+                state.status = "loading";
+            })
             .addCase(followUser.fulfilled, (state, action) => {
+                state.status = "succeeded";
                 const userIdToFollow = action.meta.arg;
                 if (!state.loggedInUserFollowing.includes(userIdToFollow)) {
                     state.loggedInUserFollowing.push(userIdToFollow);
                 }
             })
-
-            // Update unfollowUser.fulfilled
             .addCase(unfollowUser.fulfilled, (state, action) => {
+                state.status = "succeeded";
                 const userIdToUnfollow = action.meta.arg;
                 state.loggedInUserFollowing = state.loggedInUserFollowing.filter(
                     id => id !== userIdToUnfollow
                 );
             })
+            // .addCase(followerandfollowing.fulfilled, (state, action) => {
+            //     state.status = "succeeded";
+            //     const { followers, following } = action.payload;
+            //     state.currentProfileFollowers = followers;
+            //     state.currentProfileFollowing = following.map(user => user._id);
+            // })
             .addCase(followerandfollowing.fulfilled, (state, action) => {
+                state.status = "succeeded";
                 const { followers, following } = action.payload;
 
-                state.currentProfileFollowers = followers;
+                // Followers को IDs में बदलें
+                state.currentProfileFollowers = followers.map(follower => follower._id);
+
+                // Following को IDs में बदलें
                 state.currentProfileFollowing = following.map(user => user._id);
-
-
-
             })
+
             .addCase(myprofile.fulfilled, (state, action) => {
-                state.loggedInUserFollowing = action.payload.following.map(user => user._id);
-
-            });
-
-
+                state.status = "succeeded";
+                state.loggedInUserFollowing = action.payload.following.map(
+                    user => user._id
+                );
+            })
+            .addMatcher(
+                (action) => action.type.endsWith("/rejected"),
+                (state, action) => {
+                    state.status = "failed";
+                    state.error = action.payload || action.error.message;
+                }
+            );
     }
 });
-export const { addFollower, removeFollower } = friendSlice.actions;
+
+// Export Actions
+export const {
+    addFollower,
+    removeFollower,
+    addToFollowing,
+    removeFromFollowing,
+
+} = friendSlice.actions;
+
 export default friendSlice.reducer;

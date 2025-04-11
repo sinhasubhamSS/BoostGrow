@@ -11,9 +11,8 @@ import { Toaster } from "react-hot-toast";
 import Chatpage from './pages/Chatpage'
 import useSocket from './services/Socket'
 import Profilepage from './pages/Profilepage'
-
-
-
+import { useDispatch, useSelector } from 'react-redux'
+import { myprofile } from './Redux/friendSlice'
 
 const router = createBrowserRouter
     (
@@ -39,7 +38,16 @@ const router = createBrowserRouter
             </>
         ))
 function App() {
-    useSocket()
+    const dispatch = useDispatch()
+    const loggedInUserId = useSelector((state) => state.user.loggedinuser)
+    console.log(loggedInUserId);
+    useEffect(() => {
+        if (loggedInUserId) {
+            dispatch(myprofile(loggedInUserId._id));
+        }
+    }, [loggedInUserId, dispatch]);
+    useSocket(loggedInUserId)
+
 
     return (
         <>

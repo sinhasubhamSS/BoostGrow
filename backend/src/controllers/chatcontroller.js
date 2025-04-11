@@ -104,7 +104,7 @@ export const getChatUsers = async (req, res) => {
         // Fetch user details
         const users = await User.find({ _id: { $in: [...userIds] } })
             .select("username profilePic");
-            console.log("here",users);
+        console.log("here", users);
         return res.status(200).json({ users });
 
         // const chatUsers = await Conversation.aggregate([

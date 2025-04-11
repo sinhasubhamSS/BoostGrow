@@ -36,7 +36,7 @@ export const messagedUsers = createAsyncThunk('users/messagedUsers', async (_, t
   try {
     console.log("reached messageduderd section");
     const response = await api.get("api/users/chat/chatusers")
-    console.log("backend response", response.data);
+    console.log("backend response of messaged user", response.data);
     return response.data.users;
   } catch (error) {
     console.log("error at line 41 messagedusers");
