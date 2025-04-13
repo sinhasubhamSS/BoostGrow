@@ -78,16 +78,6 @@ const friendSlice = createSlice({
                 id => id !== action.payload
             );
         },
-        addToFollowing: (state, action) => {
-            if (!state.loggedInUserFollowing.includes(action.payload)) {
-                state.loggedInUserFollowing.push(action.payload);
-            }
-        },
-        removeFromFollowing: (state, action) => {
-            state.loggedInUserFollowing = state.loggedInUserFollowing.filter(
-                id => id !== action.payload
-            );
-        },
         addToCurrentProfileFollowing: (state, action) => {
             if (!state.currentProfileFollowing.includes(action.payload)) {
                 state.currentProfileFollowing.push(action.payload);
@@ -156,8 +146,7 @@ const friendSlice = createSlice({
 export const {
     addFollower,
     removeFollower,
-    addToFollowing,
-    removeFromFollowing, addToCurrentProfileFollowing,
+    addToCurrentProfileFollowing,
     removeFromCurrentProfileFollowing
 
 } = friendSlice.actions;

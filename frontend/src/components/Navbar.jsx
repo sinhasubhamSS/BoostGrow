@@ -76,7 +76,7 @@ function Navbar() {
                     <div className="dropdown-menu">
                       <p className="dropdown-header">Hello, {user.username}</p>
                       <Link to="/update-profile" className="dropdown-item">Update Profile</Link>
-                      <Link to="/change-profile-picture" className="dropdown-item">Change Profile Picture</Link>
+                      <Link to={`/profile/${user._id}`} className="dropdown-item">My profile</Link>
                       <Logout />
                     </div>
                   )

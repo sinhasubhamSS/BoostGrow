@@ -38,14 +38,9 @@ const router = createBrowserRouter
             </>
         ))
 function App() {
-    const dispatch = useDispatch()
     const loggedInUserId = useSelector((state) => state.user.loggedinuser)
-    console.log(loggedInUserId);
-    useEffect(() => {
-        if (loggedInUserId) {
-            dispatch(myprofile(loggedInUserId._id));
-        }
-    }, [loggedInUserId, dispatch]);
+
+
     useSocket(loggedInUserId)
 
 
