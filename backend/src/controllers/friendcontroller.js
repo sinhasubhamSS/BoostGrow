@@ -112,7 +112,13 @@ const followUser = async (req, res) => {
                 sender: loggedInUserId,
                 status: "pending"
             });
-            await userToFollow.save();
+            loggedInUser.sentFriendRequests.push({
+                receiver: userIdToFollow,
+                status: "pending"
+
+            })
+
+            await Promise.all([userToFollow.save(), loggedInUser.save()])
             return res.status(200).json({
                 message: "Follow request sent!",
                 requestId: userToFollow.friendRequests[userToFollow.friendRequests.length - 1]._id

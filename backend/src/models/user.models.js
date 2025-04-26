@@ -76,7 +76,19 @@ const userSchema = new Schema({
             enum: ['pending', 'accepted', 'rejected'],
             default: 'pending'
         }
-    }]// Pending Friend Requests
+    }],// Pending Friend Requests
+    sentFriendRequests: [{
+        receiver: {   // ✅ Jisko request bheji gayi
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true
+        },
+        status: {
+            type: String,
+            enum: ['pending', 'accepted', 'rejected'],
+            default: 'pending'
+        }
+    }]
 
 
 }, {
