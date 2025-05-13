@@ -15,6 +15,12 @@ const FollowUnfollow = ({ userIdToFollow }) => {
 
     console.log("following of me", loggedInUserFollowing);
     const isFollowing = loggedInUserFollowing?.includes(userIdToFollow);
+    const sentRequests = useSelector(state => state.friend.sentRequests);
+    const isRequestSent = sentRequests?.some(
+        (request) => request.receiver === userIdToFollow && request.status === "pending"
+    );
+    console.log("data of sentrequest", sentRequests);
+    console.log("data of isrequest", isRequestSent);
     const handleFollowUnfollow = () => {
         if (isFollowing) {
             dispatch(unfollowUser(userIdToFollow));
@@ -26,6 +32,7 @@ const FollowUnfollow = ({ userIdToFollow }) => {
             });
 
         } else {
+
             dispatch(followUser(userIdToFollow));
             // socket?.emit("follow", { userId: userIdToFollow }); // ✅ WebSocket Emit
             socket?.emit("follow", {
@@ -39,7 +46,7 @@ const FollowUnfollow = ({ userIdToFollow }) => {
 
     return (
         <button onClick={handleFollowUnfollow} className="follow_button">
-            {isFollowing ? "Unfollow" : "Follow"}
+            {isRequestSent ? "Requested" : isFollowing ? "Unfollow" : "Follow"}
         </button>
     );
 };

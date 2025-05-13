@@ -13,6 +13,7 @@ import useSocket from './services/Socket'
 import Profilepage from './pages/Profilepage'
 import { useDispatch, useSelector } from 'react-redux'
 import { myprofile } from './Redux/friendSlice'
+import FriendList from './components/FriendComponent/FriendList'
 
 const router = createBrowserRouter
     (
@@ -25,7 +26,7 @@ const router = createBrowserRouter
                     <Route path='Chatpage' element={<Chatpage />} />
                     {/* <Route path="profile" element={<Profilepage />} /> */}
                     <Route path='profile/:userId' element={<Profilepage />} />
-
+                    <Route path='friend-requests' element={<FriendList />} />
 
 
 
@@ -39,8 +40,12 @@ const router = createBrowserRouter
         ))
 function App() {
     const loggedInUserId = useSelector((state) => state.user.loggedinuser)
-
-
+    const dispatch = useDispatch();
+    useEffect(() => {
+        if (loggedInUserId) {
+            dispatch(myprofile(loggedInUserId._id)); // ✅ लॉगिन यूजर का डेटा लोड करें
+        }
+    }, [loggedInUserId, dispatch]);
     useSocket(loggedInUserId)
 
 

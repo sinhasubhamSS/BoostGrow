@@ -50,7 +50,7 @@ function Navbar() {
             <Link to="/Chatpage" className='nav__link'>Chat</Link>
           </li>
           <li>
-            <Link to="/contact" className='nav__link'>Contact</Link>
+            <Link to="/friend-requests" className='nav__link'>Friend</Link>
           </li>
         </ul>
         {/* ✅ Search Box Navbar ke andar */}

@@ -30,13 +30,21 @@ function UserProfile({ userId }) {
 
   useEffect(() => {
     if (!socket) return;
-
+    const handleFriendRequestSent = (data) => {
+      if (data.senderId === loggedInUserId) {
+        dispatch(addSentRequest({
+          _id: data.requestId,
+          receiver: data.receiverId,
+          status: "pending"
+        }));
+      }
+    };
     socket.on("follow", (data) => {
       if (data.targetUserId === userId) {
         dispatch(addFollower(data.newFollower));
       }
     });
-
+    socket.on("friend_request_sent", handleFriendRequestSent);
     socket.on("unfollow", (data) => {
       if (data.targetUserId === userId) {
         dispatch(removeFollower(data.unfollowerId));
@@ -52,11 +60,22 @@ function UserProfile({ userId }) {
         }
       }
     });
+    const handleRequestAccepted = (data) => {
+      dispatch(removeFromCurrentProfileFollowing(data.requestId));
+    };
 
+    const handleRequestRejected = (data) => {
+      dispatch(removeSentRequest(data.requestId));
+    };
+    socket.on("request_accepted", handleRequestAccepted);
+    socket.on("request_rejected", handleRequestRejected);
     return () => {
+      socket.off("friend_request_sent", handleFriendRequestSent);
       socket.off("follow");
       socket.off("unfollow");
       socket.off("update_profile_following");
+      socket.off("request_accepted", handleRequestAccepted);
+      socket.off("request_rejected", handleRequestRejected);
     };
   }, [socket, userId, dispatch]);
 

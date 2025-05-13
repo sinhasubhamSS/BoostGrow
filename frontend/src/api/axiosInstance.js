@@ -23,7 +23,7 @@ api.interceptors.response.use(
         setTimeout(()=>{
           window.location.href = "/auth/login"; // User ko login page par bhej do
 
-        },2000)
+        },10000)
       
       }
     }
