@@ -3,47 +3,15 @@
 
 
 import React from 'react'
-import { useDispatch, useSelector } from "react-redux"
-import { acceptFriendRequest, declineRequest } from '../../Redux/friendSlice';
+
 
 function FriendList() {
-    const dispatch=useDispatch()
-    const friendRequests = useSelector(state => state.friend.friendRequests)
-    console.log("checking friendRequest", friendRequests);
-    const handleAccept = (requestId, senderId) => {
-        dispatch(acceptFriendRequest({ requestId, senderId }));
-    };
-
-    const handleDecline = (requestId) => {
-        dispatch(declineRequest(requestId));
-    };
+    const a=10;
+    
     return (
-        <div className="requests-container">
-            <h3>Pending Friend Requests</h3>
-            {friendRequests?.map(request => (
-                <div key={request._id} className="request-item">
-                    <div className="user-info">
-                        <img src={request.sender?.profilePicture || "/default-avatar.png"}
-                            alt={request.sender?.username || "Unknown User"} />
-                        <span>{request.sender?.username}</span>
-                    </div>
-                    <div className="request-actions">
-                        <button
-                            onClick={() => handleAccept(request._id, request.sender._id)}
-                            className="accept-btn"
-                        >
-                            Accept
-                        </button>
-                        <button
-                            onClick={() => handleDecline(request._id)}
-                            className="decline-btn"
-                        >
-                            Decline
-                        </button>
-                    </div>
-                </div>
-            ))}
-        </div>
+       <>
+        <h3>pending requests </h3>
+       </>
     );
 };
 

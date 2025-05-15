@@ -1,15 +1,16 @@
-
-
-
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import "./userprofile.css";
 import FollowUnfollow from '../FriendComponent/FollowUnfollow';
-import { addFollower, followerandfollowing, removeFollower, addToCurrentProfileFollowing, removeFromCurrentProfileFollowing } from '../../Redux/friendSlice';
-
+import {
+  addFollower,
+  followerandfollowing,
+  removeFollower,
+  addToCurrentProfileFollowing,
+  removeFromCurrentProfileFollowing
+} from '../../Redux/friendSlice';
 
 function UserProfile({ userId }) {
-  console.log(userId);
   const dispatch = useDispatch();
 
   const otherusers = useSelector((state) => state.user.otherUsers);
@@ -30,21 +31,13 @@ function UserProfile({ userId }) {
 
   useEffect(() => {
     if (!socket) return;
-    const handleFriendRequestSent = (data) => {
-      if (data.senderId === loggedInUserId) {
-        dispatch(addSentRequest({
-          _id: data.requestId,
-          receiver: data.receiverId,
-          status: "pending"
-        }));
-      }
-    };
+
     socket.on("follow", (data) => {
       if (data.targetUserId === userId) {
         dispatch(addFollower(data.newFollower));
       }
     });
-    socket.on("friend_request_sent", handleFriendRequestSent);
+
     socket.on("unfollow", (data) => {
       if (data.targetUserId === userId) {
         dispatch(removeFollower(data.unfollowerId));
@@ -60,26 +53,15 @@ function UserProfile({ userId }) {
         }
       }
     });
-    const handleRequestAccepted = (data) => {
-      dispatch(removeFromCurrentProfileFollowing(data.requestId));
-    };
 
-    const handleRequestRejected = (data) => {
-      dispatch(removeSentRequest(data.requestId));
-    };
-    socket.on("request_accepted", handleRequestAccepted);
-    socket.on("request_rejected", handleRequestRejected);
     return () => {
-      socket.off("friend_request_sent", handleFriendRequestSent);
       socket.off("follow");
       socket.off("unfollow");
       socket.off("update_profile_following");
-      socket.off("request_accepted", handleRequestAccepted);
-      socket.off("request_rejected", handleRequestRejected);
     };
   }, [socket, userId, dispatch]);
 
-  if (!user) return null; // ❌ No "User not found" — simply return null if not found
+  if (!user) return null;
 
   return (
     <div className="profile_container">
@@ -109,7 +91,6 @@ function UserProfile({ userId }) {
       </div>
     </div>
   );
-
 }
 
 export default UserProfile;
