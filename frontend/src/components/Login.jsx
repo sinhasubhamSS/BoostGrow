@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from 'react-router-dom';
 import styles from "./Csscomponents/login.module.css";
 import { useDispatch } from "react-redux";
-import { setloggedinuser, loginUser, fetchUsers, messagedUsers } from "../Redux/userSlice"
+import { setloggedinuser, loginUser, messagedUsers } from "../Redux/userSlice"
 import toast from "react-hot-toast"
-import { myprofile } from '../Redux/friendSlice';
+import { fetchRequests, myprofile } from '../Redux/friendSlice';
 
 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
 
   const { handleSubmit, register, formState: { errors } } = useForm();
   const onSubmit = async (data) => {
@@ -19,7 +20,8 @@ function Login() {
     if (result.payload?.success) {
       toast.success("user logged in successfully!");
       dispatch(setloggedinuser(result.payload.user))
-      dispatch(fetchUsers())
+      dispatch(fetchRequests())
+
       dispatch(myprofile(result.payload.user._id));
       navigate("/")
     } else {

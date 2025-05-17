@@ -52,7 +52,44 @@ export const myprofile = createAsyncThunk(
         }
     }
 );
+export const fetchRequests = createAsyncThunk(
+    "friend/fetchPendingRequests",
+    async (_, thunkAPI) => {
+        try {
+            const response = await api.get("/api/users/friend/fetchRequests");
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data || "Failed to fetch pending requests");
+        }
+    }
+);
 
+
+// Accept Friend Request
+export const acceptRequest = createAsyncThunk(
+    "friend/acceptRequest",
+    async (requestId, thunkAPI) => {
+        try {
+            const response = await api.post(`/api/users/friend/accept-friend-request/${requestId}`);
+            return { requestId, senderId: response.data.newFollower };
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data || "Failed to accept request");
+        }
+    }
+);
+
+// Reject Friend Request
+export const rejectRequest = createAsyncThunk(
+    "friend/rejectRequest",
+    async (requestId, thunkAPI) => {
+        try {
+            await api.delete(`/api/users/friend/reject-friend-request/${requestId}`);
+            return requestId;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data || "Failed to reject request");
+        }
+    }
+);
 const friendSlice = createSlice({
     name: "friend",
     initialState: {
@@ -60,7 +97,9 @@ const friendSlice = createSlice({
         currentProfileFollowers: [],
         currentProfileFollowing: [],
         status: "idle",
-        error: null
+        error: null,
+        pendingRequests: [],
+        sentRequests: [],
     },
     reducers: {
         addFollower: (state, action) => {
@@ -83,24 +122,53 @@ const friendSlice = createSlice({
                 id => id !== action.payload
             );
         },
+        addfriendRequest: (state, action) => {
+            if (!state.pendingRequests.some(req => req._id === action.payload._id)) {
+                state.pendingRequests.push(action.payload);
+            }
+
+        },
     },
     extraReducers: (builder) => {
         builder
             .addCase(followUser.pending, (state) => {
                 state.status = "loading";
             })
+            // In friendSlice.js - followUser.fulfilled case
+            // Update the followUser.fulfilled case
             .addCase(followUser.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                const { userId } = action.payload;
-                if (!state.loggedInUserFollowing.includes(userId)) {
-                    state.loggedInUserFollowing.push(userId);
+                const { request } = action.payload;
+                
+
+                if (request?.status === "pending") {
+                    state.sentRequests.push({
+                        _id: request._id,
+                        receiver: request.receiver, // Should be the ID
+                        status: request.status,
+                        sender: { // From response
+                            _id: request.sender._id,
+                            username: request.sender.username,
+                            avatar: request.sender.avatar
+                        }
+                    });
+                }
+                // Public account handling remains same
+                else if (action.payload.userId) {
+                    state.loggedInUserFollowing.push(action.payload.userId);
                 }
             })
+
+            // In unfollowUser.fulfilled case
             .addCase(unfollowUser.fulfilled, (state, action) => {
-                state.status = "succeeded";
                 const userIdToUnfollow = action.meta.arg;
+                // Remove from following
                 state.loggedInUserFollowing = state.loggedInUserFollowing.filter(
                     id => id !== userIdToUnfollow
+                );
+                // Also remove any pending requests to this user
+                state.sentRequests = state.sentRequests.filter(
+                    req => req.receiver !== userIdToUnfollow
                 );
             })
             .addCase(followerandfollowing.fulfilled, (state, action) => {
@@ -113,6 +181,28 @@ const friendSlice = createSlice({
                 state.status = "succeeded";
                 const { following } = action.payload;
                 state.loggedInUserFollowing = following.map(f => f._id);
+            })
+            .addCase(fetchRequests.fulfilled, (state, action) => {
+                state.pendingRequests = action.payload.pendingRequests || [];
+                state.sentRequests = action.payload.sentRequests || [];
+            })
+
+            .addCase(acceptRequest.fulfilled, (state, action) => {
+                // Remove from pending requests
+                state.pendingRequests = state.pendingRequests.filter(
+                    req => req._id !== action.payload.requestId
+                );
+                // Add to followers
+                if (!state.currentProfileFollowers.includes(action.payload.senderId)) {
+                    state.currentProfileFollowers.push(action.payload.senderId);
+                }
+            })
+
+            // Reject Request
+            .addCase(rejectRequest.fulfilled, (state, action) => {
+                state.pendingRequests = state.pendingRequests.filter(
+                    req => req._id !== action.payload
+                );
             })
             .addMatcher(
                 (action) => action.type.endsWith("/rejected"),
@@ -129,7 +219,7 @@ export const {
     addFollower,
     removeFollower,
     addToCurrentProfileFollowing,
-    removeFromCurrentProfileFollowing
+    removeFromCurrentProfileFollowing, addfriendRequest,
 } = friendSlice.actions;
 
 export default friendSlice.reducer;

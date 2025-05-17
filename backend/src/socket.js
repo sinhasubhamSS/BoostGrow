@@ -27,6 +27,7 @@ io.on("connection", (socket) => {
     const userId = socket.handshake.auth?.userId;
 
     if (userId) {
+        socket.join(userId);
         userSocketMap[userId] = socket.id;
         console.log(`🟢 Stored user ${userId} with socket ID: ${socket.id}`);
     }

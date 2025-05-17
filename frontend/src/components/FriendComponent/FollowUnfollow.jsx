@@ -16,11 +16,18 @@ const FollowUnfollow = ({ userIdToFollow }) => {
     console.log("following of me", loggedInUserFollowing);
     const isFollowing = loggedInUserFollowing?.includes(userIdToFollow);
     const sentRequests = useSelector(state => state.friend.sentRequests);
-    const isRequestSent = sentRequests?.some(
-        (request) => request.receiver === userIdToFollow && request.status === "pending"
+    // In FollowUnfollow component
+    const isRequestSent = sentRequests?.some(request =>
+        (request.receiver._id === userIdToFollow || // Handle existing object format
+            request.receiver === userIdToFollow) &&    // Handle new string format
+        request.status === "pending"
     );
-    console.log("data of sentrequest", sentRequests);
-    console.log("data of isrequest", isRequestSent);
+
+
+    console.log("sentRequests", sentRequests);
+    console.log("userIdToFollow", userIdToFollow);
+    console.log("isRequestSent", isRequestSent);
+
     const handleFollowUnfollow = () => {
         if (isFollowing) {
             dispatch(unfollowUser(userIdToFollow));

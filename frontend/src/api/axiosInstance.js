@@ -20,11 +20,11 @@ api.interceptors.response.use(
       } catch (err) {
         toast.error("Session expired! Please login again.");
         console.log("Session expired, redirecting to login...");
-        setTimeout(()=>{
+        setTimeout(() => {
           window.location.href = "/auth/login"; // User ko login page par bhej do
 
-        },10000)
-      
+        }, 4000)
+
       }
     }
     return Promise.reject(error);

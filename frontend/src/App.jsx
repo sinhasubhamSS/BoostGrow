@@ -41,11 +41,11 @@ const router = createBrowserRouter
 function App() {
     const loggedInUserId = useSelector((state) => state.user.loggedinuser)
     const dispatch = useDispatch();
-    useEffect(() => {
-        if (loggedInUserId) {
-            dispatch(myprofile(loggedInUserId._id)); // ✅ लॉगिन यूजर का डेटा लोड करें
-        }
-    }, [loggedInUserId, dispatch]);
+    // useEffect(() => {
+    //     if (loggedInUserId) {
+    //         dispatch(myprofile(loggedInUserId._id)); // ✅ लॉगिन यूजर का डेटा लोड करें
+    //     }
+    // }, [loggedInUserId, dispatch]);
     useSocket(loggedInUserId)
 
 
