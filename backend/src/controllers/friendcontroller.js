@@ -164,7 +164,7 @@ import mongoose from "mongoose";
 
 
 const followUser = async (req, res) => {
-    const loggedInUserId = req.user._id.toString();
+    const loggedInUserId = req.user._id
     const { userIdToFollow } = req.params;
 
     try {
@@ -206,17 +206,15 @@ const followUser = async (req, res) => {
             userToFollow.friendRequests.push(newRequest);
             loggedInUser.sentFriendRequests.push({
                 _id: requestId,
-                receiver: userIdToFollow,
+                receiver: new mongoose.Types.ObjectId(userIdToFollow),
                 status: "pending"
             });
 
             await Promise.all([userToFollow.save(), loggedInUser.save()]);
 
-            // ✅ WebSocket Event भेजें
-            // गलत:
-            io.to("friend_request_received", { /*...*/ });
 
-            // सही:
+
+
             io.to(userIdToFollow).emit("friend_request_received", {
                 request: {
                     _id: requestId,
@@ -390,114 +388,186 @@ const unfollowUser = async (req, res) => {
 
 const acceptFollowRequest = async (req, res) => {
     try {
-        const receiverId = req.user._id;
         const { requestId } = req.params;
+        const receiverId = req.user._id;
 
-        // 1. Find and remove the request
-        const receiver = await User.findOneAndUpdate(
-            { _id: receiverId, 'friendRequests._id': requestId },
-            { $pull: { friendRequests: { _id: requestId } } },
-            { new: true }
-        );
-
-        if (!receiver) {
-            return res.status(404).json({ message: "Request not found" });
-        }
-
-        // 2. Get sender ID from request
-        const request = receiver.friendRequests.id(requestId);
-        const senderId = request?.sender;
-        if (!senderId) {
-            return res.status(400).json({ message: "Invalid request format" });
-        }
-
-        // 3. Update both users' relationships atomically
-        await Promise.all([
-            User.findByIdAndUpdate(receiverId, {
-                $addToSet: { followers: senderId }
-            }),
-            User.findByIdAndUpdate(senderId, {
-                $addToSet: { following: receiverId },
-                $pull: { sentFriendRequests: { receiver: receiverId } }
-            })
-        ]);
-
-        // 4. Emit real-time update
-        io.to(senderId).emit('request_accepted', {
-            receiverId: receiverId,
-            requestId: requestId
+        // 1. Find the request first
+        const receiver = await User.findOne({
+            _id: receiverId,
+            'friendRequests._id': requestId
         });
 
+        if (!receiver) {
+            return res.status(404).json({
+                success: false,
+                message: "Request not found"
+            });
+        }
+
+        // 2. Extract sender ID before modifying
+        const request = receiver.friendRequests.id(requestId);
+        if (!request?.sender) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid request format"
+            });
+        }
+        const senderId = request.sender;
+
+        // 3. Perform updates atomically
+        await Promise.all([
+            User.updateOne(
+                { _id: receiverId },
+                {
+                    $pull: { friendRequests: { _id: requestId } },
+                    $addToSet: { followers: senderId }
+                }
+            ),
+            User.updateOne(
+                { _id: senderId },
+                {
+                    $addToSet: { following: receiverId },
+                    $pull: { sentFriendRequests: { receiver: receiverId } }
+                }
+            )
+        ]);
+        // Backend (acceptFollowRequest controller)
+        io.to(senderId.toString()).emit("request_accepted", {
+            requestId,
+            senderId,
+            receiverId: loggedInUserId // ✅ जिसने accept किया उसका ID
+        });
+
+        io.to(receiverId.toString()).emit("new_follower", {
+            followerId: senderId, // ✅ Sender अब receiver का follower है
+            targetUserId: receiverId
+        });
         res.status(200).json({
             success: true,
-            message: "Request accepted successfully",
+            message: "Request accepted",
             senderId: senderId,
             receiverId: receiverId
         });
 
     } catch (error) {
-        console.error("Accept request error:", error);
+        console.error("Accept error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to accept request",
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
+// const rejectFriendRequest = async (req, res) => {
+//     const session = await mongoose.startSession();
+//     session.startTransaction();
+
+//     try {
+//         const { requestId } = req.params;
+//         const receiverId = req.user._id;
+//         console.log(requestId);
+//         // 1. Find and validate the request
+//         const receiver = await User.findOne({
+//             _id: receiverId,
+//             'friendRequests._id': requestId
+//         }).session(session);
+
+//         if (!receiver) {
+//             await session.abortTransaction();
+//             return res.status(404).json({ message: "Request not found" });
+//         }
+
+//         const request = receiver.friendRequests.id(requestId);
+//         const senderId = request.sender;
+
+//         // 2. Remove requests (both sides)
+//         await User.updateOne(
+//             { _id: receiverId },
+//             { $pull: { friendRequests: { _id: requestId } } }
+//         ).session(session);
+
+//         await User.updateOne(
+//             { _id: senderId },
+//             { $pull: { sentFriendRequests: { receiver: receiverId } } }
+//         ).session(session);
+
+//         await session.commitTransaction();
+
+//         // 3. Notify sender
+//         // After deleting request
+//         io.to(senderId.toString()).emit('request_rejected', {
+//             requestId: request._id
+//         });
+
+//         io.to(receiverId.toString()).emit('request_rejected', {
+//             requestId: request._id
+//         });
+
+//         res.status(200).json({ message: "Request declined" });
+
+//     } catch (error) {
+//         await session.abortTransaction();
+//         res.status(500).json({ message: "Error declining request", error: error.message });
+//     } finally {
+//         session.endSession();
+//     }
+// };
+
+const rejectFriendRequest = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        const receiverId = req.user._id;
+
+        console.log("🔍 requestId:", requestId);
+        console.log("🔍 receiverId:", receiverId);
+
+        const receiver = await User.findById(receiverId);
+        if (!receiver) {
+            console.log("❌ Receiver not found");
+            return res.status(404).json({
+                success: false,
+                message: "Receiver not found"
+            });
+        }
+
+        console.log("📦 receiver.friendRequests:", receiver.friendRequests);
+
+        const request = receiver.friendRequests.id(requestId);
+        if (!request) {
+            console.log("❌ Request not found in receiver.friendRequests");
+            return res.status(400).json({
+                success: false,
+                message: "Invalid request format"
+            });
+        }
+
+        const senderId = request.sender;
+        console.log("✅ senderId:", senderId);
+
+        // Pull request from both sides
+        receiver.friendRequests.pull({ _id: requestId });
+        await receiver.save();
+
+        await User.findByIdAndUpdate(senderId, {
+            $pull: { sentFriendRequests: { _id: requestId } }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Request declined",
+            requestId
+        });
+
+    } catch (error) {
+        console.error("❌ Reject friend request error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error declining request",
             error: error.message
         });
     }
 };
 
-const rejectFriendRequest = async (req, res) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-        const { requestId } = req.params;
-        const receiverId = req.user._id;
-        console.log(requestId);
-        // 1. Find and validate the request
-        const receiver = await User.findOne({
-            _id: receiverId,
-            'friendRequests._id': requestId
-        }).session(session);
-
-        if (!receiver) {
-            await session.abortTransaction();
-            return res.status(404).json({ message: "Request not found" });
-        }
-
-        const request = receiver.friendRequests.id(requestId);
-        const senderId = request.sender;
-
-        // 2. Remove requests (both sides)
-        await User.updateOne(
-            { _id: receiverId },
-            { $pull: { friendRequests: { _id: requestId } } }
-        ).session(session);
-
-        await User.updateOne(
-            { _id: senderId },
-            { $pull: { sentFriendRequests: { receiver: receiverId } } }
-        ).session(session);
-
-        await session.commitTransaction();
-
-        // 3. Notify sender
-        io.to(senderId.toString()).emit('request_declined', {
-            requestId,
-            receiver: {
-                _id: receiverId,
-                username: req.user.username
-            }
-        });
-
-        res.status(200).json({ message: "Request declined" });
-
-    } catch (error) {
-        await session.abortTransaction();
-        res.status(500).json({ message: "Error declining request", error: error.message });
-    } finally {
-        session.endSession();
-    }
-};
 const getFriendList = async (req, res) => {
     const loggedInUserId = req.user._id;
     try {
@@ -679,39 +749,99 @@ export {
     checkFollowStatus, getFollowRequests
 }
 
-// const getFollowRequests = async (req, res) => {
-//     try {
-//         const user = await User.findById(req.user._id)
-//             .populate('friendRequests.sender', 'username avatar _id')
-//             .populate('sentFriendRequests.receiver', 'username avatar _id')
-//             .lean();
 
-//         if (!user) {
-//             return res.status(404).json({ message: "User not found" });
+// const acceptFollowRequest = async (req, res) => {
+//     const session = await mongoose.startSession();
+//     let transactionCompleted = false;
+//     let senderId;
+
+//     try {
+//         await session.withTransaction(async () => {
+//             const receiverId = req.user._id;
+//             const { requestId } = req.params;
+//             console.log(receiverId);
+//             console.log(requestId);
+
+
+//             // 2. Find the request
+//             const receiver = await User.findOne({
+//                 _id: receiverId,
+//                 'friendRequests._id': requestId
+//             }).session(session);
+//             console.log(receiver);
+//             if (!receiver) {
+//                 throw new Error("Request not found"); // Throw instead of sending response
+//             }
+
+//             // 3. Get request details
+//             const request = receiver.friendRequests.id(requestId);
+//             if (!request) {
+//                 throw new Error("Request not found in receiver's list");
+//             }
+//             senderId = request.sender;
+
+//             // 4. Validate sender exists
+//             const senderExists = await User.exists({ _id: senderId }).session(session);
+//             if (!senderExists) {
+//                 throw new Error("Sender user not found");
+//             }
+
+//             // 5. Execute all updates
+//             await Promise.all([
+//                 User.updateOne(
+//                     { _id: receiverId },
+//                     { $addToSet: { followers: senderId } }
+//                 ).session(session),
+
+//                 User.updateOne(
+//                     { _id: senderId },
+//                     {
+//                         $addToSet: { following: receiverId },
+//                         $pull: { sentFriendRequests: { _id: requestId } } // Fixed pull condition
+//                     }
+//                 ).session(session),
+
+//                 User.updateOne(
+//                     { _id: receiverId },
+//                     { $pull: { friendRequests: { _id: requestId } } }
+//                 ).session(session)
+//             ]);
+
+//             transactionCompleted = true;
+//         });
+
+//         // 6. Only proceed if transaction completed
+//         if (senderId) {
+//             io.to(senderId.toString()).emit('request_accepted', {
+//                 requestId: req.params.requestId,
+//                 receiver: {
+//                     _id: req.user._id,
+//                     username: req.user.username,
+//                     avatar: req.user.avatar
+//                 }
+//             });
+
+//             return res.status(200).json({
+//                 message: "Request accepted",
+//                 newFollower: senderId
+//             });
 //         }
 
-//         const response = {
-//             pendingRequests: user.friendRequests.map(req => ({
-//                 _id: req._id,
-//                 status: req.status,
-//                 createdAt: req.createdAt,
-//                 user: req.sender
-//             })),
-//             sentRequests: user.sentFriendRequests.map(req => ({
-//                 _id: req._id,
-//                 status: req.status,
-//                 createdAt: req.createdAt,
-//                 user: req.receiver
-//             }))
-//         };
-
-//         res.status(200).json(response);
+//         throw new Error("Transaction completed but sender ID not set");
 
 //     } catch (error) {
-//         console.error("Error:", error);
-//         res.status(500).json({
-//             message: "Error fetching requests",
+//         if (!transactionCompleted) {
+//             await session.abortTransaction().catch(() => { });
+//         }
+
+//         console.error("Transaction error:", error);
+
+//         const statusCode = error.message.includes("not found") ? 404 : 500;
+//         return res.status(statusCode).json({
+//             message: error.message,
 //             error: error.message
 //         });
+//     } finally {
+//         await session.endSession();
 //     }
 // };

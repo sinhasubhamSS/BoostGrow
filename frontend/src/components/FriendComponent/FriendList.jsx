@@ -23,18 +23,18 @@ function FriendList() {
         }
 
         console.log("Socket connected?", socket.connected); // <-- Check here
-     
+
         const handleFriendRequest = (data) => {
             console.log("Friend request received:", data); // ✅ Should run
             if (data.receiver === loggedInUserId) {
                 dispatch(addfriendRequest(data.request));
             }
         };
-
         socket.on("friend_request_received", handleFriendRequest);
 
         return () => {
             socket.off("friend_request_received", handleFriendRequest);
+           
         };
     }, [socket, loggedInUserId, dispatch]);
 
@@ -47,8 +47,6 @@ function FriendList() {
     const handleReject = (requestId) => {
         dispatch(rejectRequest(requestId));
     };
-
-
 
     return (
         <div className="friend-list-container">

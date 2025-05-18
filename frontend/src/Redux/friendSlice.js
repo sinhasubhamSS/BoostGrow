@@ -128,6 +128,8 @@ const friendSlice = createSlice({
             }
 
         },
+       
+
     },
     extraReducers: (builder) => {
         builder
@@ -139,7 +141,7 @@ const friendSlice = createSlice({
             .addCase(followUser.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 const { request } = action.payload;
-                
+
 
                 if (request?.status === "pending") {
                     state.sentRequests.push({
@@ -187,21 +189,34 @@ const friendSlice = createSlice({
                 state.sentRequests = action.payload.sentRequests || [];
             })
 
+            // In friendSlice.js - acceptRequest.fulfilled case
             .addCase(acceptRequest.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                const { senderId, receiverId } = action.payload;
+
                 // Remove from pending requests
                 state.pendingRequests = state.pendingRequests.filter(
-                    req => req._id !== action.payload.requestId
+                    req => req._id !== action.meta.arg // Use original request ID from action
                 );
-                // Add to followers
-                if (!state.currentProfileFollowers.includes(action.payload.senderId)) {
-                    state.currentProfileFollowers.push(action.payload.senderId);
+
+                // Update both users' relationships
+                if (!state.loggedInUserFollowing.includes(receiverId)) {
+                    state.loggedInUserFollowing.push(receiverId);
+                }
+                if (!state.currentProfileFollowers.includes(senderId)) {
+                    state.currentProfileFollowers.push(senderId);
                 }
             })
 
             // Reject Request
+            // In extraReducers
             .addCase(rejectRequest.fulfilled, (state, action) => {
+                const requestId = action.payload?.requestId || action.meta.arg;
                 state.pendingRequests = state.pendingRequests.filter(
-                    req => req._id !== action.payload
+                    req => req._id !== requestId
+                );
+                state.sentRequests = state.sentRequests.filter(
+                    req => req._id !== requestId
                 );
             })
             .addMatcher(
