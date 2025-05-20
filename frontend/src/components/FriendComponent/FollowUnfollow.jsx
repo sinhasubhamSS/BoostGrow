@@ -51,31 +51,28 @@ const FollowUnfollow = ({ userIdToFollow }) => {
 
         }
     };
-    useEffect(() => {
-        if (!socket) return;
+    // useEffect(() => {
+    //     if (!socket) return;
 
-        const handleRequestAccepted = (data) => {
-            console.log("Request accepted event received:", data);
-            // Check if the logged-in user is the sender of the accepted request
-            if (data.senderId === loggedInUserId) {
-                // Add the targetUserId (user they now follow) to their following list
-                dispatch(addfollowing(data.targetUserId));
-                // Remove the accepted request from sentRequests
-                dispatch(removeFromSentRequests(data.requestId));
-            }
-        };
+    //     const handleRequestAccepted = (data) => {
+    //         console.log("Request accepted event received:", data);
+    //         // Check if the logged-in user is the sender of the accepted request
+    //         if (data.senderId === loggedInUserId) {
+    //             // Add the targetUserId (user they now follow) to their following list
+    //             dispatch(addfollowing(data.targetUserId));
+    //             // Remove the accepted request from sentRequests
+    //             dispatch(removeFromSentRequests(data.requestId));
 
-        socket.on("request_accepted", handleRequestAccepted);
-        socket.on('following_added', (data) => {
-            console.log("followunfollow user aded",data);
-            dispatch(addfollowing(data.newFollowingId)); // Redux में अपडेट
-        });
+    //         }
+    //     };
 
-        return () => {
-            socket.off("request_accepted", handleRequestAccepted);
-            socket.off('following_added');
-        };
-    }, [socket, dispatch, loggedInUserId]);
+    //     socket.on("request_accepted", handleRequestAccepted);
+     
+    //     return () => {
+    //         socket.off("request_accepted", handleRequestAccepted);
+        
+    //     };
+    // }, [socket, dispatch, loggedInUserId]);
 
 
     return (

@@ -11,7 +11,7 @@ import {
   removeFromSentRequests,
   addfollowing
 } from '../../Redux/friendSlice';
-
+import toast from 'react-hot-toast';
 function UserProfile({ userId }) {
   const dispatch = useDispatch();
 
@@ -55,18 +55,33 @@ function UserProfile({ userId }) {
         }
       }
     });
-    socket.on('follower_added', (data) => {
-      console.log("userprofile follower added",data);
-      if (data.newFollowerId === userId) { // सिर्फ current profile के लिए
-        dispatch(addFollower(data.newFollowerId));
+    socket.on("new_follower_added", ({ followerId }) => {
+      dispatch(addFollower(followerId));  // receiver's perspective
+    });
+    socket.on("request_accepted", (data) => {
+      console.log("Request accepted event received:", data);
+
+      // ✅ Sender's perspective: I'm viewing the profile I just got accepted into
+      if (data.senderId === loggedinuser?._id && data.targetUserId === userId) {
+        dispatch(addFollower(data.senderId)); // Sender now sees themself in target's followers
+        dispatch(removeFromSentRequests(data.requestId)); // Clean up local state
+        dispatch(addfollowing(data.targetUserId)); // Update my following list
       }
     });
+    socket.on("request_rejected", (data) => {
+      console.log("Request rejected by:", data.receiverId);
 
+      dispatch(removeFromSentRequests(data.requestId));
+
+      toast("Your friend request was declined.");
+
+    });
     return () => {
       socket.off("follow");
       socket.off("unfollow");
       socket.off("update_profile_following");
-      socket.off('follower_added');
+      socket.off("new_follower_added")
+      socket.off("request_rejected");
     };
   }, [socket, userId, dispatch]);
 

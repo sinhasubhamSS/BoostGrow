@@ -11,156 +11,6 @@ import mongoose from "mongoose";
 // followUser (user ko follow karne ke liye)
 // unfollowUser (user ko unfollow karne ke liye)
 
-// const followUser = async (req, res) => {
-//     const loggedInUserId = req.user._id;
-//     const { userIdToFollow } = req.params;
-
-
-//     try {
-//         //step 1 make sure user does not folow themselves
-//         if (loggedInUserId.toString() === userIdToFollow.toString()) {
-//             return res.status(400).json({ message: "You cannot follow yourself" })
-//         }
-//         //step 2 : find the user whom you want to follow 
-//         const userToFollow = await User.findById(userIdToFollow)
-//         if (!userToFollow) {
-//             return res.status(404).json({ message: "User not found" });
-//         }
-//         //check if user alrady follows 
-//         // const alreadyFollowing=userToFollow.friends.includes(loggedInUserId) this will have tc O of n
-//         //so lets use mongodb query
-//         // Instead of using .includes() (O(N)), we use MongoDB's `exists()` for better performance (O(1)).
-//         // Instead of using .includes() (O(N)), we use MongoDB's `exists()` for better performance (O(1)).
-//         const alreadyFollowing = await User.exists({
-//             _id: userIdToFollow,
-//             friends: loggedInUserId
-//         })//so in this function we are passing the id of person we want to follow and then check if at friends the person who wants to follow has the id already present or not
-//         if (alreadyFollowing) {
-//             return res.status(400).json({ message: "You are already following " })
-//         }
-//         //step 4 if account is privvate send friend request
-//         //some() -iska use  hai ki agar array mein kuch ek item hai aur usko satisfy karta hai to true return karna 
-//         if (userToFollow.privacy === "private") {
-//             const existingRequest = userToFollow.friendRequests.find(
-//                 (request) => request.sender.toString() === loggedInUserId.toString()
-//             );
-
-//             if (existingRequest) {
-//                 return res.status(400).json({ message: "Friend request already sent!" });
-//             }
-
-//             userToFollow.friendRequests.push({ sender: loggedInUserId, status: "pending" });
-//             await userToFollow.save();
-
-//             return res.status(200).json({ message: "Friend request sent!" });
-//         }
-//         //if account is public ,follow directly
-//         userToFollow.friends.push(loggedInUserId);
-//         await userToFollow.save();
-//         return res.status(200).json({
-//             message: "User followed successfully!",
-//             userId: userIdToFollow
-//         });
-
-
-//     } catch (error) {
-//         return res.status(500).json({ message: "Something went wrong!", error });
-
-//     }
-// };
-
-
-// const followUser = async (req, res) => {
-//     const loggedInUserId = req.user._id.toString();
-//     const { userIdToFollow } = req.params;
-
-//     try {
-//         if (loggedInUserId === userIdToFollow) {
-//             return res.status(400).json({ message: "You cannot follow yourself" });
-//         }
-
-//         const [userToFollow, loggedInUser] = await Promise.all([
-//             User.findById(userIdToFollow),
-//             User.findById(loggedInUserId)
-//         ]);
-
-
-//         if (!userToFollow || !loggedInUser) {
-//             return res.status(404).json({ message: "User not found" });
-//         }
-
-//         // Check if already following
-//         if (userToFollow.followers.includes(loggedInUserId)) {
-//             return res.status(200).json({
-//                 message: `You are already following ${userToFollow.username}`
-//             });
-//         }
-
-//         if (userToFollow.privacy === "private") {
-//             console.log("🔒 Private Account - Sending Follow Request...");
-//             const existingRequest = userToFollow.friendRequests.find(
-//                 (request) => request.sender.toString() === loggedInUserId
-//             );
-
-//             if (existingRequest) {
-//                 return res.status(400).json({
-//                     message: "Follow request already sent!"
-//                 });
-//             }
-
-//             userToFollow.friendRequests.push({
-//                 sender: loggedInUserId,
-//                 status: "pending"
-//             });
-//             loggedInUser.sentFriendRequests.push({
-//                 receiver: userIdToFollow,
-//                 status: "pending"
-
-//             })
-
-//             await Promise.all([userToFollow.save(), loggedInUser.save()])
-//             io.emit("friend_request_sent", {
-//                 requestId: loggedInUserId,
-//                 receiverId: userIdToFollow,
-//                 requestId: userToFollow.friendRequests[userToFollow.friendRequests.length - 1]._id
-//             });
-//             return res.status(200).json({
-//                 message: "Follow request sent!",
-//                 requestId: userToFollow.friendRequests[userToFollow.friendRequests.length - 1]._id
-//             });
-//         }
-
-//         // ✅ Add user to 'following' and 'followers'
-//         loggedInUser.following.push(userIdToFollow);
-//         userToFollow.followers.push(loggedInUserId);
-
-//         // ✅ Save both users
-//         await loggedInUser.save();
-//         await userToFollow.save();
-//         io.emit("follow", {
-//             targetUserId: userIdToFollow, // जिसे follow किया
-//             newFollower: loggedInUserId,  // जिसने follow किया (current user)
-//             loggedInUserId: loggedInUserId // ✅ नई field जोड़ें
-//         });
-//         io.emit("update_profile_following", {
-//             type: "follow",
-//             profileUserId: loggedInUserId,  // जिसका following update होगा
-//             targetUserId: userIdToFollow    // जिसे follow किया
-//         });
-
-//         return res.status(200).json({
-//             message: `Successfully followed ${userToFollow.username}`,
-//             userId: userIdToFollow
-//         });
-
-//     } catch (error) {
-//         console.error("❌ Follow user error:", error);
-//         return res.status(500).json({
-//             message: "Something went wrong!",
-//             error: error.message
-//         });
-//     }
-// };
 
 
 const followUser = async (req, res) => {
@@ -183,7 +33,6 @@ const followUser = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // ✅ पहले से follow या request check करें
         const isAlreadyFollowing = userToFollow.followers.includes(loggedInUserId);
         const hasPendingRequest = userToFollow.friendRequests.some(
             req => req.sender.toString() === loggedInUserId
@@ -198,8 +47,7 @@ const followUser = async (req, res) => {
         if (userToFollow.privacy === "private") {
             console.log("🔒 Private Account - Sending Follow Request...");
             const requestId = new mongoose.Types.ObjectId();
-            // ✅ नया request बनाएं
-            const newRequest = {
+                 const newRequest = {
                 _id: requestId,
                 sender: loggedInUserId,
                 status: "pending"
@@ -248,7 +96,7 @@ const followUser = async (req, res) => {
             });
         }
 
-        // Public Account का Logic
+        
         loggedInUser.following.push(userIdToFollow);
         userToFollow.followers.push(loggedInUserId);
 
@@ -268,7 +116,7 @@ const followUser = async (req, res) => {
 
         return res.status(200).json({
             message: `Successfully followed ${userToFollow.username}`,
-            userId: userIdToFollow // ✅ Follow किए गए user का ID
+            userId: userIdToFollow
         });
 
     } catch (error) {
@@ -372,8 +220,8 @@ const unfollowUser = async (req, res) => {
         });
         io.emit("update_profile_following", {
             type: "unfollow",
-            profileUserId: loggedInUserId,   // जिसका following update होगा
-            targetUserId: userIdToUnfollow   // जिसे unfollow किया
+            profileUserId: loggedInUserId,  
+            targetUserId: userIdToUnfollow 
         });
         console.log(`✅ Successfully unfollowed ${userToUnfollow.username}`);
 
@@ -441,15 +289,10 @@ const acceptFollowRequest = async (req, res) => {
             senderId: senderId.toString(),     // Convert to string
             requestId: requestId.toString()    // Convert to string if it's ObjectId
         });
-        io.to(`user_${senderId}`).emit('following_added', {
-            newFollowingId: receiverId
-        });
 
-        // User B को अपना Followers बढ़ाने का सिग्नल
-        io.to(`user_${receiverId}`).emit('follower_added', {
-            newFollowerId: senderId
+        io.to(receiverId.toString()).emit("new_follower_added", {
+            followerId: senderId.toString()
         });
-
         console.log("accpt request reached");
 
         res.status(200).json({
@@ -468,60 +311,6 @@ const acceptFollowRequest = async (req, res) => {
         });
     }
 };
-// const rejectFriendRequest = async (req, res) => {
-//     const session = await mongoose.startSession();
-//     session.startTransaction();
-
-//     try {
-//         const { requestId } = req.params;
-//         const receiverId = req.user._id;
-//         console.log(requestId);
-//         // 1. Find and validate the request
-//         const receiver = await User.findOne({
-//             _id: receiverId,
-//             'friendRequests._id': requestId
-//         }).session(session);
-
-//         if (!receiver) {
-//             await session.abortTransaction();
-//             return res.status(404).json({ message: "Request not found" });
-//         }
-
-//         const request = receiver.friendRequests.id(requestId);
-//         const senderId = request.sender;
-
-//         // 2. Remove requests (both sides)
-//         await User.updateOne(
-//             { _id: receiverId },
-//             { $pull: { friendRequests: { _id: requestId } } }
-//         ).session(session);
-
-//         await User.updateOne(
-//             { _id: senderId },
-//             { $pull: { sentFriendRequests: { receiver: receiverId } } }
-//         ).session(session);
-
-//         await session.commitTransaction();
-
-//         // 3. Notify sender
-//         // After deleting request
-//         io.to(senderId.toString()).emit('request_rejected', {
-//             requestId: request._id
-//         });
-
-//         io.to(receiverId.toString()).emit('request_rejected', {
-//             requestId: request._id
-//         });
-
-//         res.status(200).json({ message: "Request declined" });
-
-//     } catch (error) {
-//         await session.abortTransaction();
-//         res.status(500).json({ message: "Error declining request", error: error.message });
-//     } finally {
-//         session.endSession();
-//     }
-// };
 
 const rejectFriendRequest = async (req, res) => {
     try {
@@ -561,6 +350,10 @@ const rejectFriendRequest = async (req, res) => {
         await User.findByIdAndUpdate(senderId, {
             $pull: { sentFriendRequests: { _id: requestId } }
         });
+        io.to(senderId.toString()).emit("request_rejected",{
+            requestId,
+            receiverId
+        })
 
         return res.status(200).json({
             success: true,
@@ -760,99 +553,3 @@ export {
     checkFollowStatus, getFollowRequests
 }
 
-
-// const acceptFollowRequest = async (req, res) => {
-//     const session = await mongoose.startSession();
-//     let transactionCompleted = false;
-//     let senderId;
-
-//     try {
-//         await session.withTransaction(async () => {
-//             const receiverId = req.user._id;
-//             const { requestId } = req.params;
-//             console.log(receiverId);
-//             console.log(requestId);
-
-
-//             // 2. Find the request
-//             const receiver = await User.findOne({
-//                 _id: receiverId,
-//                 'friendRequests._id': requestId
-//             }).session(session);
-//             console.log(receiver);
-//             if (!receiver) {
-//                 throw new Error("Request not found"); // Throw instead of sending response
-//             }
-
-//             // 3. Get request details
-//             const request = receiver.friendRequests.id(requestId);
-//             if (!request) {
-//                 throw new Error("Request not found in receiver's list");
-//             }
-//             senderId = request.sender;
-
-//             // 4. Validate sender exists
-//             const senderExists = await User.exists({ _id: senderId }).session(session);
-//             if (!senderExists) {
-//                 throw new Error("Sender user not found");
-//             }
-
-//             // 5. Execute all updates
-//             await Promise.all([
-//                 User.updateOne(
-//                     { _id: receiverId },
-//                     { $addToSet: { followers: senderId } }
-//                 ).session(session),
-
-//                 User.updateOne(
-//                     { _id: senderId },
-//                     {
-//                         $addToSet: { following: receiverId },
-//                         $pull: { sentFriendRequests: { _id: requestId } } // Fixed pull condition
-//                     }
-//                 ).session(session),
-
-//                 User.updateOne(
-//                     { _id: receiverId },
-//                     { $pull: { friendRequests: { _id: requestId } } }
-//                 ).session(session)
-//             ]);
-
-//             transactionCompleted = true;
-//         });
-
-//         // 6. Only proceed if transaction completed
-//         if (senderId) {
-//             io.to(senderId.toString()).emit('request_accepted', {
-//                 requestId: req.params.requestId,
-//                 receiver: {
-//                     _id: req.user._id,
-//                     username: req.user.username,
-//                     avatar: req.user.avatar
-//                 }
-//             });
-
-//             return res.status(200).json({
-//                 message: "Request accepted",
-//                 newFollower: senderId
-//             });
-//         }
-
-//         throw new Error("Transaction completed but sender ID not set");
-
-//     } catch (error) {
-//         if (!transactionCompleted) {
-//             await session.abortTransaction().catch(() => { });
-//         }
-
-//         console.error("Transaction error:", error);
-
-//         const statusCode = error.message.includes("not found") ? 404 : 500;
-//         return res.status(statusCode).json({
-//             message: error.message,
-//             error: error.message
-//         });
-//     } finally {
-//         await session.endSession();
-//     }
-// };
