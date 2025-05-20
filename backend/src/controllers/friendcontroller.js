@@ -166,9 +166,11 @@ import mongoose from "mongoose";
 const followUser = async (req, res) => {
     const loggedInUserId = req.user._id
     const { userIdToFollow } = req.params;
+    console.log(loggedInUserId);
+    console.log(userIdToFollow);
 
     try {
-        if (loggedInUserId === userIdToFollow) {
+        if (loggedInUserId.toString() === userIdToFollow) {
             return res.status(400).json({ message: "You cannot follow yourself" });
         }
 
@@ -431,17 +433,25 @@ const acceptFollowRequest = async (req, res) => {
                 }
             )
         ]);
+        console.log(senderId);
+        console.log(receiverId);
         // Backend (acceptFollowRequest controller)
         io.to(senderId.toString()).emit("request_accepted", {
-            requestId,
-            senderId,
-            receiverId: loggedInUserId // ✅ जिसने accept किया उसका ID
+            targetUserId: receiverId.toString(), // Convert to string
+            senderId: senderId.toString(),     // Convert to string
+            requestId: requestId.toString()    // Convert to string if it's ObjectId
+        });
+        io.to(`user_${senderId}`).emit('following_added', {
+            newFollowingId: receiverId
         });
 
-        io.to(receiverId.toString()).emit("new_follower", {
-            followerId: senderId, // ✅ Sender अब receiver का follower है
-            targetUserId: receiverId
+        // User B को अपना Followers बढ़ाने का सिग्नल
+        io.to(`user_${receiverId}`).emit('follower_added', {
+            newFollowerId: senderId
         });
+
+        console.log("accpt request reached");
+
         res.status(200).json({
             success: true,
             message: "Request accepted",
@@ -646,6 +656,7 @@ const getFollowerAndFollowing = async (req, res) => {
             });
 
         if (!user) {
+            console.log("no user found");
             return res.status(404).json({ message: "User not found" });
         }
 

@@ -96,6 +96,7 @@ const friendSlice = createSlice({
         loggedInUserFollowing: [],
         currentProfileFollowers: [],
         currentProfileFollowing: [],
+        loggedInUserFollower: [],
         status: "idle",
         error: null,
         pendingRequests: [],
@@ -127,8 +128,19 @@ const friendSlice = createSlice({
                 state.pendingRequests.push(action.payload);
             }
 
+        },// In your friendSlice reducers
+        addfollowing: (state, action) => {
+            if (!state.loggedInUserFollowing.includes(action.payload)) {
+                state.loggedInUserFollowing.push(action.payload);
+            }
+        }
+        , removeFromSentRequests: (state, action) => {
+            state.sentRequests = state.sentRequests.filter(
+                req => req._id !== action.payload
+            );
         },
-       
+
+
 
     },
     extraReducers: (builder) => {
@@ -181,8 +193,9 @@ const friendSlice = createSlice({
             })
             .addCase(myprofile.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                const { following } = action.payload;
+                const { following, followers } = action.payload;
                 state.loggedInUserFollowing = following.map(f => f._id);
+                state.loggedInUserFollower = followers.map(f => f._id);
             })
             .addCase(fetchRequests.fulfilled, (state, action) => {
                 state.pendingRequests = action.payload.pendingRequests || [];
@@ -192,7 +205,7 @@ const friendSlice = createSlice({
             // In friendSlice.js - acceptRequest.fulfilled case
             .addCase(acceptRequest.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                const { senderId, receiverId } = action.payload;
+                const { senderId } = action.payload;
 
                 // Remove from pending requests
                 state.pendingRequests = state.pendingRequests.filter(
@@ -200,12 +213,10 @@ const friendSlice = createSlice({
                 );
 
                 // Update both users' relationships
-                if (!state.loggedInUserFollowing.includes(receiverId)) {
-                    state.loggedInUserFollowing.push(receiverId);
+                if (!state.loggedInUserFollower.includes(senderId)) {
+                    state.loggedInUserFollower.push(senderId);
                 }
-                if (!state.currentProfileFollowers.includes(senderId)) {
-                    state.currentProfileFollowers.push(senderId);
-                }
+
             })
 
             // Reject Request
@@ -234,7 +245,7 @@ export const {
     addFollower,
     removeFollower,
     addToCurrentProfileFollowing,
-    removeFromCurrentProfileFollowing, addfriendRequest,
+    removeFromCurrentProfileFollowing, addfriendRequest, addfollowing ,removeFromSentRequests
 } = friendSlice.actions;
 
 export default friendSlice.reducer;

@@ -9,7 +9,8 @@ function FriendList() {
         sentRequests,
     } = useSelector((state) => state.friend);
     const socket = useSelector(state => state.socket.instance);
-    const loggedInUserId = useSelector(state => state.friend.loggedinuser?._id);
+    const loggedInUserId = useSelector(state => state.user.loggedinuser?._id);
+    console.log(loggedInUserId);
     // Fetch requests on component mount
     useEffect(() => {
         dispatch(fetchRequests());
@@ -26,7 +27,7 @@ function FriendList() {
 
         const handleFriendRequest = (data) => {
             console.log("Friend request received:", data); // ✅ Should run
-            if (data.receiver === loggedInUserId) {
+            if (data.request.receiver === loggedInUserId) {
                 dispatch(addfriendRequest(data.request));
             }
         };

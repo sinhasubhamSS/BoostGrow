@@ -7,7 +7,9 @@ import {
   followerandfollowing,
   removeFollower,
   addToCurrentProfileFollowing,
-  removeFromCurrentProfileFollowing
+  removeFromCurrentProfileFollowing,
+  removeFromSentRequests,
+  addfollowing
 } from '../../Redux/friendSlice';
 
 function UserProfile({ userId }) {
@@ -53,11 +55,18 @@ function UserProfile({ userId }) {
         }
       }
     });
+    socket.on('follower_added', (data) => {
+      console.log("userprofile follower added",data);
+      if (data.newFollowerId === userId) { // सिर्फ current profile के लिए
+        dispatch(addFollower(data.newFollowerId));
+      }
+    });
 
     return () => {
       socket.off("follow");
       socket.off("unfollow");
       socket.off("update_profile_following");
+      socket.off('follower_added');
     };
   }, [socket, userId, dispatch]);
 

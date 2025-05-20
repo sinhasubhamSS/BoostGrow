@@ -3,7 +3,7 @@
 
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { followUser, unfollowUser } from '../../Redux/friendSlice';
+import { addfollowing, followUser, removeFromSentRequests, unfollowUser, } from '../../Redux/friendSlice';
 import "./friendcss/followunfollow.css"
 
 const FollowUnfollow = ({ userIdToFollow }) => {
@@ -24,9 +24,10 @@ const FollowUnfollow = ({ userIdToFollow }) => {
     );
 
 
-    console.log("sentRequests", sentRequests);
-    console.log("userIdToFollow", userIdToFollow);
+    console.log(" sentRequests", sentRequests);
+    console.log(" userIdToFollow", userIdToFollow);
     console.log("isRequestSent", isRequestSent);
+    console.log("isfollowing", isFollowing);
 
     const handleFollowUnfollow = () => {
         if (isFollowing) {
@@ -50,6 +51,32 @@ const FollowUnfollow = ({ userIdToFollow }) => {
 
         }
     };
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleRequestAccepted = (data) => {
+            console.log("Request accepted event received:", data);
+            // Check if the logged-in user is the sender of the accepted request
+            if (data.senderId === loggedInUserId) {
+                // Add the targetUserId (user they now follow) to their following list
+                dispatch(addfollowing(data.targetUserId));
+                // Remove the accepted request from sentRequests
+                dispatch(removeFromSentRequests(data.requestId));
+            }
+        };
+
+        socket.on("request_accepted", handleRequestAccepted);
+        socket.on('following_added', (data) => {
+            console.log("followunfollow user aded",data);
+            dispatch(addfollowing(data.newFollowingId)); // Redux में अपडेट
+        });
+
+        return () => {
+            socket.off("request_accepted", handleRequestAccepted);
+            socket.off('following_added');
+        };
+    }, [socket, dispatch, loggedInUserId]);
+
 
     return (
         <button onClick={handleFollowUnfollow} className="follow_button">
