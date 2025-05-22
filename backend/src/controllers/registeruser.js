@@ -56,7 +56,10 @@ const register = async (req, res) => {
         //     return res.status(400).json({ message: "Profile Picture is required" })
 
         // }
-        // const profilePicture = await uploadOnCloudinary(profilepath)
+        // const profilePicture = await uploadOnCloudinary(profilepath) use below one 
+        // const profilePicture =  await uploadOnCloudinary(profilePath, "profilePictures");
+
+
         // if (!profilePicture || !profilePicture.url) {
         //     return res.status(400).json({ message: "Profile Picture is failed to upload" })
         // }

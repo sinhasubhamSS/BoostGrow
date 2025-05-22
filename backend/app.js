@@ -50,9 +50,11 @@ import userRouter from "./src/rotes/userroutes.js";
 import userTask from "./src/rotes/taskroutes.js";
 import chatRoutes from "./src/rotes/chatroutes.js"
 import friendRoutes from "./src/rotes/friendroutes.js"
+import postRoutes from "./src/rotes/postroutes.js"
 app.use("/api/users", userRouter);
 app.use("/api/users/task", userTask);
 app.use("/api/users/chat", chatRoutes);
 app.use("/api/users/friend", friendRoutes);
+app.use("/api/users/post", postRoutes);
 
 export { app };
