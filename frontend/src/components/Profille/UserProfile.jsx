@@ -12,6 +12,7 @@ import {
   addfollowing
 } from '../../Redux/friendSlice';
 import toast from 'react-hot-toast';
+import { fetchMyPost, fetchOthersPost } from '../../Redux/postSlice';
 function UserProfile({ userId }) {
   const dispatch = useDispatch();
 
@@ -24,6 +25,23 @@ function UserProfile({ userId }) {
 
   const currentProfileFollowers = useSelector(state => state.friend.currentProfileFollowers);
   const currentProfileFollowing = useSelector(state => state.friend.currentProfileFollowing);
+  //post
+  const myPosts = useSelector(state => state.post.myPost);
+  const otherUserPosts = useSelector(state => state.post.otherUserPost)
+  const postsToShow = isOwnProfile ? myPosts : otherUserPosts;
+
+  useEffect(() => {
+    if (!userId) return;
+
+    if (isOwnProfile) {
+      dispatch(fetchMyPost()); // apne posts
+
+      ;
+    } else {
+      dispatch(fetchOthersPost(userId)); // other user ke posts
+      console.log("i will do later on ");
+    }
+  }, [userId, dispatch, isOwnProfile]);
 
   useEffect(() => {
     if (userId) {
@@ -89,31 +107,63 @@ function UserProfile({ userId }) {
 
   return (
     <div className="profile_container">
-      <div className="profileimage">
-        <img src={user.profilePicture || "/default-avatar.png"} alt="Profile" className="image" />
+      <div className="profile_top">
+        <div className="profileimage">
+          <img
+            src={user.profilePicture || "/default-avatar.png"}
+            alt="Profile"
+            className="image"
+          />
+        </div>
+
+        <div className="profile_deatils">
+          <div className="profile_username">
+            <h2>{user.username}</h2>
+            {isOwnProfile ? (
+              <button className="edit_btn">Edit Profile</button>
+            ) : (
+              <div className="profile__actions">
+                <FollowUnfollow userIdToFollow={user._id} />
+                <button className="message__btn">Message</button>
+              </div>
+            )}
+          </div>
+
+          <div className="profile__counts">
+            <div className="count">
+              <span className="number">{currentProfileFollowers?.length || 0}</span>
+              <span className="label">Followers</span>
+            </div>
+            <div className="count">
+              <span className="number">{currentProfileFollowing?.length || 0}</span>
+              <span className="label">Following</span>
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <div className="profile_deatils">
-        <div className="profile_username">
-          <h2>{user.username}</h2>
-          {isOwnProfile ? (
-            <button className="edit_btn">Edit Profile</button>
-          ) : (
-            <div className="profile__actions">
-              <FollowUnfollow userIdToFollow={user._id} />
-              <button className="message__btn">Message</button>
+      {/* ✅ Bio below the full profile section */}
+      <p className="profile__bio">{user.bio || "No bio available"}</p>
+
+      {/* ✅ Divider */}
+      <hr className="profile_divider" />
+
+      {/* ✅ Posts Grid stays inside profile_container */}
+      <div className="profile_posts_grid">
+        {postsToShow.length > 0 ? (
+          postsToShow.map(post => (
+            <div key={post._id} className="post_card">
+              <img src={post.image} alt="post" />
             </div>
-          )}
-        </div>
+          ))
+        ) : (
+          <p> no posts</p>
+        )}
 
-        <div className="profile__counts">
-          <p><strong>{currentProfileFollowers?.length || 0}</strong> followers</p>
-          <p><strong>{currentProfileFollowing?.length || 0}</strong> following</p>
-        </div>
-
-        <p className="profile__bio">{user.bio || "No bio available"}</p>
       </div>
     </div>
+
   );
 }
 

@@ -2,6 +2,7 @@
 .search__container {
   position: relative;
   width: 250px;
+  margin-left: 4rem;
 }
 
 .search__input {
@@ -12,6 +13,11 @@
   border-radius: 20px;
   outline: none;
 }
+
+.search__input:hover {
+  outline: 2px solid blue;
+}
+
 
 .search__result {
   position: absolute;

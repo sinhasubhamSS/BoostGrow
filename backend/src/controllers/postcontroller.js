@@ -4,6 +4,7 @@ import { uploadOnCloudinary } from "../specific/cloudinary.js";
 import { User } from "../models/user.models.js";
 const addpost = async (req, res) => {
     try {
+        console.log("reached ad post");
         const userId = req.user._id;
         const { content, visibility } = req.body;
         //now image from user with multer to cloudinary and then backend

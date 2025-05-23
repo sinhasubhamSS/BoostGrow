@@ -1,0 +1,37 @@
+/* colors.css */
+:root {
+  /* Core Color Palette */
+  --primary: #362bd9;       /* Main brand color */
+  --secondary: #6e3f91;     /* Secondary accent */
+  --neutral: #2d3748;       /* Text and dark elements */
+  
+  /* Derived Colors */
+  --primary-light: #e0ddfa;
+  --primary-dark: #2a23b0;
+  --secondary-light: #f0e5f7;
+  --neutral-light: #f8f9fa;
+  --neutral-mid: #e2e8f0;
+  --neutral-dark: #1a202c;
+  
+  /* Utility Colors */
+  --success: #48bb78;
+  --warning: #ed8936;
+  --danger: #e53e3e;
+  
+  /* Transparent Variants */
+  --primary-transparent: rgba(54, 43, 217, 0.1);
+  --secondary-transparent: rgba(110, 63, 145, 0.1);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Borders */
+  --border-radius: 0.5rem;
+  --border-width: 1px;
+  --border-color: var(--neutral-mid);
+  
+  /* Transitions */
+  --transition: all 0.2s ease;
+}
