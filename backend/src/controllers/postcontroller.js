@@ -7,45 +7,47 @@ const addpost = async (req, res) => {
         console.log("reached ad post");
         const userId = req.user._id;
         const { content, visibility } = req.body;
-        //now image from user with multer to cloudinary and then backend
-        const imagePath = req.files?.postImage?.[0]?.path;
-        if (!content && !imagePath) {
-            return res.status(400).json({
-                message: "Either content or image is missing to create post"
 
-            })
+        const imagePath = req.files?.postImage?.[0]?.path;
+
+        const trimmedContent = typeof content === "string" ? content.trim() : "";
+
+        if (!trimmedContent && !imagePath) {
+            return res.status(400).json({
+                message: "Either content or image is required to create post"
+            });
         }
+
         let imageUrl = null;
 
-        //if the image is available upload it to the cloudinary
         if (imagePath) {
             const uploadResult = await uploadOnCloudinary(imagePath, "postImage");
             if (!uploadResult || !uploadResult.secure_url) {
-                return res.status(400).json({ message: "image upload failed" })
+                return res.status(400).json({ message: "Image upload failed" });
             }
-            imageUrl = uploadResult.secure_url
+            imageUrl = uploadResult.secure_url;
         }
 
-        //lets create new post and save it vroo
         const newPost = new Post({
             author: userId,
-            content: content?.trim() || null,
+            content: trimmedContent || null,
             image: imageUrl,
             visibility: visibility || "public"
-        })
-        await newPost.save();
-        res.status(200).json({
-            message: "post create successfully",
-            post: newPost
-        })
+        });
 
+        await newPost.save();
+
+        res.status(200).json({
+            message: "Post created successfully",
+            post: newPost
+        });
 
     } catch (error) {
         console.error("Error creating post:", error);
         res.status(500).json({ message: "Something went wrong" });
-
     }
-}
+};
+
 const editPost = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -137,99 +139,6 @@ const getMyPosts = async (req, res) => {
         res.status(500).json({ message: "Something went wrong" });
     }
 };
-
-// const getHomefeed = async (req, res) => {
-//     try {
-
-//         const userId = req.user._id;
-//         const user = await User.findById(userId).select("following")
-//               const followingUserIds = user.following.map(id => id.toString());
-
-//         console.log("ids following", followingUserIds);
-
-//         const page = parseInt(req.query.page) || 1
-//         const limit = parseInt(req.query.limit) || 5
-//         const skip = (page - 1) * limit//pahla wala ko skip kartahai agar kou page 5 ma hai to 5-1=4*10=40pahla ka 40 ko skip kar daga
-
-
-//         const posts = await Post.find({
-//             $or: [
-//                 //case 1:public account public post
-//                 {
-//                     $and: [
-//                         { "author.privacy": "public" },
-//                         { visibility: "public" }
-//                     ]
-//                 },
-//                 {
-//                     //private asccount any post ony to followers
-//                     $and: [{ "author.privacy": "private" },
-//                     { "author._id": { $in: followingUserIds } }
-//                     ]
-//                 },
-//                 {
-//                     //publilc account private post
-//                     $and: [
-
-//                         { "author.privacy": "public" },
-//                         { "visibility": "private" },
-//                         { "author._id": { $in: followingUserIds } },
-
-
-
-//                     ]
-//                 }
-
-//             ]
-//         }).sort({ createdAt: -1 })
-//             .skip(skip)
-//             .limit(limit)
-//             .populate("author", "username profilePicture")
-
-//         console.log(posts);
-//         const totalPosts = await Post.countDocuments({
-//             $or: [{
-//                 $and: [
-//                     { "author.privacy": "public" },
-//                     { visibility: "public" }
-//                 ]
-//             },
-//             {
-//                 //private asccount any post ony to followers
-//                 $and: [{ "author.privacy": "private" },
-//                 { "author._id": { $in: followingUserIds } }
-//                 ]
-//             },
-//             {
-//                 //publilc account private post
-//                 $and: [
-
-//                     { "author.privacy": "public" },
-//                     { "visibility": "private" },
-//                     { "author._id": { $in: followingUserIds } },
-
-
-
-//                 ]
-//             }
-
-
-//             ]
-//         });
-//         res.status(200).json({
-//             message: "home feed posts fetched",
-//             posts,
-//             pagination: {
-//                 totalPosts,
-//                 page,
-//                 totalPages: Math.ceil(totalPosts / limit)
-//             }
-
-//         })
-//     } catch (error) {
-//         res.status(500).json({ message: "Something went wrong in home feed" });
-//     }
-// }
 
 
 const getHomefeed = async (req, res) => {

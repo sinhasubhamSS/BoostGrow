@@ -1,0 +1,22 @@
+@import "../../../colour.css";
+
+.homefeed-post {
+  max-width: 100%;
+  background-color: var(--neutral-light);
+}
+
+.post-divider {
+  border-bottom: 2px solid var(--border-color);
+  margin: 2rem 0;
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .homefeed-post {
+    padding: 0.5rem;
+  }
+  
+  .post-divider {
+    margin: 1.5rem 0;
+  }
+}

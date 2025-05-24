@@ -9,11 +9,12 @@ import { combineReducers } from "redux";
 import messageReducer from "./messageSlice"
 import friendReducer from "./friendSlice"
 import postReducer from "./postSlice"
+import interactionReducer from "./interactionSlice"
 import { enableMapSet } from 'immer';
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user", "friend"], // ✅ Sirf `user` state persist hogi
+    whitelist: ["user", "friend","post","interaction"], // ✅ Sirf `user` state persist hogi
 };
 enableMapSet();
 const rootReducer = combineReducers({
@@ -22,7 +23,8 @@ const rootReducer = combineReducers({
     message: messageReducer,
     socket: socketReducer,
     friend: friendReducer,
-    post: postReducer
+    post: postReducer,
+    interaction:interactionReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
