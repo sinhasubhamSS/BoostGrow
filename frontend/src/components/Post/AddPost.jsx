@@ -20,35 +20,32 @@ function AddPost({ onClose, postToEdit = null }) {
         }
     }, [postToEdit]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
+        onClose(); // CLOSE IMMEDIATELY
+
         const formData = new FormData();
+        formData.append('content', content);
+        formData.append('visibility', visibility);
+        if (image) formData.append('postImage', image);
 
-        if (postToEdit) {
-            if (content !== postToEdit.content) formData.append('content', content);
-            if (visibility !== postToEdit.visibility) formData.append('visibility', visibility);
-            if (image) formData.append('postImage', image);
-
-            dispatch(editPost({
-                id: postToEdit._id,
-                formData,
-                originalImage: postToEdit.postImage
-            }))
-                .unwrap()
-                .then(handleClose)
-                .catch(error => console.error("Edit failed:", error));
-        } else {
-            formData.append('content', content);
-            formData.append('visibility', visibility);
-            if (image) formData.append('postImage', image);
-
-            dispatch(addPost(formData))
-                .unwrap()
-                .then(handleClose)
-                .catch(error => console.error("Post creation failed:", error));
+        try {
+            if (postToEdit) {
+                await dispatch(editPost({
+                    id: postToEdit._id,
+                    formData,
+                    originalImage: postToEdit.postImage
+                })).unwrap();
+            } else {
+                await dispatch(addPost(formData)).unwrap();
+            }
+        } catch (error) {
+            console.error("Post failed:", error);
+            // You can consider bringing the form back if needed
         }
     };
+
 
 
     const handleClose = () => {
@@ -160,4 +157,4 @@ function AddPost({ onClose, postToEdit = null }) {
     );
 }
 
-export default AddPost;
+export default AddPost; 

@@ -9,7 +9,7 @@ import { combineReducers } from "redux";
 import messageReducer from "./messageSlice"
 import friendReducer from "./friendSlice"
 import postReducer from "./postSlice"
-import interactionReducer from "./interactionSlice"
+
 import { enableMapSet } from 'immer';
 const persistConfig = {
     key: "root",
@@ -24,7 +24,7 @@ const rootReducer = combineReducers({
     socket: socketReducer,
     friend: friendReducer,
     post: postReducer,
-    interaction:interactionReducer
+    
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

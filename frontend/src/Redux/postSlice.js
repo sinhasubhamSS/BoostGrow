@@ -1,13 +1,11 @@
 import { createAsyncThunk, createSlice, isPending, isRejected } from "@reduxjs/toolkit";
 import api from "../api/axiosInstance";
-import { toggleLike } from "./interactionSlice";
+
 export const addPost = createAsyncThunk("Post/addPost",
     async (formData, thunkAPI) => {
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
-        }
         try {
             const response = await api.post("/api/users/post/addpost", formData)
+            console.log(response.data);
             return response.data
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response?.data || "adding post failed");
@@ -86,9 +84,9 @@ const postSlice = createSlice({
 
             .addCase(addPost.fulfilled, (state, action) => {
                 state.loading = false;
-                //now ab new post ko top pa insert karate hai
-                state.myPost.unshift(action.payload);
-                state.homeFeed.unshift(action.payload);
+                const newPost = action.payload.post; // ✅ only the post
+                state.myPost.unshift(newPost);
+                state.homeFeed.unshift(newPost);
             })
 
             .addCase(fetchMyPost.fulfilled, (state, action) => {
@@ -122,31 +120,18 @@ const postSlice = createSlice({
                 );
 
             })
-            // postSlice.js में extraReducers में जोड़ें
-            // postSlice.js में
-            .addCase(toggleLike.fulfilled, (state, action) => {
-                const { postId, likeCount } = action.payload;
 
-                // सभी पोस्ट लिस्ट्स को अपडेट करें
-                const updatePosts = (posts) => posts.map(post =>
-                    post._id === postId ? { ...post, likes: likeCount } : post
-                );
-
-                state.homeFeed = updatePosts(state.homeFeed);
-                state.myPost = updatePosts(state.myPost);
-                state.otherUserPost = updatePosts(state.otherUserPost);
-            })
             .addMatcher(isPending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
 
-        // ✅ Common matcher for any rejected thunk
-        .addMatcher(isRejected, (state, action) => {
-            state.loading = false;
-            state.error = action.payload?.message || "Something went wrong";
-        });
-},
+            // ✅ Common matcher for any rejected thunk
+            .addMatcher(isRejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || "Something went wrong";
+            });
+    },
 });
 
 export default postSlice.reducer;
