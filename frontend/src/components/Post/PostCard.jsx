@@ -1,15 +1,18 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "./postcard.css";
 import { useDispatch } from 'react-redux';
 import { deletePost } from '../../Redux/postSlice';
 import AddPost from './AddPost';
+import LikeComponent from '../interactions/Likecomponent';
+import api from '../../api/axiosInstance';
 
-function PostCard({ _id, author, image, content, likes = 0, comments = [], visibility }) {
+function PostCard({ _id, author, image, content, likeCount: initialLikeCount, comments = 0, visibility }) {
     const [showOptions, setShowOptions] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const dispatch = useDispatch();
-
+    const [likeCount, setLikeCount] = useState(initialLikeCount); // ✅ like count state
+    const [liked, setLiked] = useState(false); // ✅ liked state
     const handleDelete = () => {
         dispatch(deletePost(_id));
         setShowOptions(false);
@@ -19,6 +22,21 @@ function PostCard({ _id, author, image, content, likes = 0, comments = [], visib
         setIsEditing(true);
         setShowOptions(false);
     };
+    useEffect(() => {
+        setLikeCount(initialLikeCount);
+    }, [initialLikeCount]);
+    useEffect(() => {
+        const fetchLikeStatus = async () => {
+            try {
+                const res = await api.get(`/api/users/post/like/${_id}`);
+                setLiked(res.data.liked);
+            } catch (error) {
+                console.error("Error fetching like status:", error);
+            }
+        };
+
+        fetchLikeStatus();
+    }, [_id]);
 
     return (
         <div className="post-card-wrapper">
@@ -68,7 +86,15 @@ function PostCard({ _id, author, image, content, likes = 0, comments = [], visib
                 {/* Action Buttons Section */}
                 <div className="post-actions">
                     <div className="action-buttons">
-                        <button className="like-btn">🤍</button>
+                        <LikeComponent
+                            postId={_id}
+                            likes={likeCount}
+                            setLikes={setLikeCount}
+                            liked={liked}
+                            setLiked={setLiked}
+                        />
+
+
                         <button className="comment-btn">💬</button>
                         <button className="share-btn">↗️</button>
                     </div>
@@ -77,7 +103,7 @@ function PostCard({ _id, author, image, content, likes = 0, comments = [], visib
 
                 {/* Post Details Section */}
                 <div className="post-details">
-                    <p className="likes">{likes.toLocaleString()} {likes === 1 ? "like" : "likes"}</p>
+                    <p className="likes">{initialLikeCount} {initialLikeCount === 1 ? "like" : "likes"}</p>
                     <p className="caption">
                         <span className="caption-username">{author?.username}</span> {content}
                     </p>

@@ -77,7 +77,21 @@ const initialState = {
 const postSlice = createSlice({
     name: "post",
     initialState,
-    reducers: {},
+    reducers: {
+        updateLikeCount: (state, action) => {
+            const { postId, likeCount } = action.payload;
+
+            const updateArray = (arr) => arr.map(post =>
+                post._id === postId ? { ...post, likeCount } : post
+            );
+
+            state.myPost = updateArray(state.myPost);
+            state.homeFeed = updateArray(state.homeFeed);
+            state.otherUserPost = updateArray(state.otherUserPost);
+        }
+    },
+
+
 
     extraReducers: (builder) => {
         builder
@@ -135,3 +149,5 @@ const postSlice = createSlice({
 });
 
 export default postSlice.reducer;
+export const { updateLikeCount } = postSlice.actions;
+

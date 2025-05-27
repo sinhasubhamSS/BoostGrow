@@ -32,7 +32,8 @@ const addpost = async (req, res) => {
             author: userId,
             content: trimmedContent || null,
             image: imageUrl,
-            visibility: visibility || "public"
+            visibility: visibility || "public",
+            likeCount: 0
         });
 
         await newPost.save();
@@ -200,6 +201,7 @@ const getHomefeed = async (req, res) => {
                     content: 1,
                     image: 1,
                     visibility: 1,
+                    likeCount: 1,
                     createdAt: 1,
                     author: {
                         _id: 1,
@@ -329,89 +331,3 @@ export { getOthersUserPosts, getSinglePost, getHomefeed, getMyPosts, addpost, ed
 
 
 
-
-// const getHomefeed = async (req, res) => {
-//     try {
-//         const userId = req.user._id;
-//         const user = await User.findById(userId).select("following");
-//         const followingUserIds = user.following.map(id => id.toString()); // Ensure they're strings
-
-//         const page = parseInt(req.query.page) || 1;
-//         const limit = parseInt(req.query.limit) || 5;
-//         const skip = (page - 1) * limit;
-
-//         // Aggregation Pipeline
-//         const pipeline = [
-//             {
-//                 $lookup: {
-//                     from: "users", // Collection name for User model
-//                     localField: "author",
-//                     foreignField: "_id",
-//                     as: "authorDetails"
-//                 }
-//             },
-//             { $unwind: "$authorDetails" },
-//             {
-//                 $match: {
-//                     $or: [
-//                         // Public accounts with public posts
-//                         {
-//                             $and: [
-//                                 { "authorDetails.accountPrivacy": "public" },
-//                                 { "visibility": "public" }
-//                             ]
-//                         },
-//                         // Followed users (private account or private post)
-//                         {
-//                             $and: [
-//                                 { "author": { $in: followingUserIds } },
-//                                 {
-//                                     $or: [
-//                                         { "authorDetails.accountPrivacy": "private" },
-//                                         { "visibility": "private" }
-//                                     ]
-//                                 }
-//                             ]
-//                         }
-//                     ]
-//                 }
-//             },
-//             { $sort: { createdAt: -1 } },
-//             { $skip: skip },
-//             { $limit: limit },
-//             {
-//                 $project: {
-//                     content: 1,
-//                     image: 1,
-//                     "author.username": "$authorDetails.username",
-//                     "author.profilePicture": "$authorDetails.profilePicture",
-//                     visibility: 1,
-//                     createdAt: 1
-//                 }
-//             }
-//         ];
-
-//         const posts = await Post.aggregate(pipeline);
-
-//         // Count total posts for pagination
-//         const countPipeline = [
-//             ...pipeline.slice(0, -3), // Exclude sorting, skipping, limiting, and projecting
-//             { $count: "totalPosts" }
-//         ];
-//         const totalResult = await Post.aggregate(countPipeline);
-//         const totalPosts = totalResult[0]?.totalPosts || 0;
-
-//         res.status(200).json({ // Corrected status code to 200
-//             message: "Home feed posts fetched",
-//             posts,
-//             pagination: {
-//                 totalPosts,
-//                 page,
-//                 totalPages: Math.ceil(totalPosts / limit)
-//             }
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: "Error fetching home feed" });
-//     }
-// };

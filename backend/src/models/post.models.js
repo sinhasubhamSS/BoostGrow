@@ -20,5 +20,9 @@ const postSchema = new Schema({
         enum: ["public", "private", "friends"],
         default: "public"
     },
+    likeCount: { type: Number, default: 0 },
+    likedByCurrentUser:{
+        
+    }
 }, { timestamps: true })
 export const Post = mongoose.model("Post", postSchema)
