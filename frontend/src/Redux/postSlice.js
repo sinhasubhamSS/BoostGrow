@@ -1,5 +1,7 @@
 import { createAsyncThunk, createSlice, isPending, isRejected } from "@reduxjs/toolkit";
 import api from "../api/axiosInstance";
+import { addComment, deleteComment } from "./interactionSlice";
+import { updatePostInAllArrays } from "../utils/postUtils";
 
 export const addPost = createAsyncThunk("Post/addPost",
     async (formData, thunkAPI) => {
@@ -49,6 +51,7 @@ export const fetchHomeFeed = createAsyncThunk("Post/HomeFeed", async () => {
 export const deletePost = createAsyncThunk("Post/deletePost", async (postId, thunkAPI) => {
     try {
         const response = await api.delete(`api/users/post/deletepost/${postId}`)
+        console.log(response.data);
         return { deletedPostId: postId };
     } catch (error) {
         return thunkAPI.rejectWithValue(error.response?.data || "deleting post failed");
@@ -78,10 +81,12 @@ const postSlice = createSlice({
     name: "post",
     initialState,
     reducers: {
+
         updateLikeCount: (state, action) => {
             const { postId, likeCount } = action.payload;
 
-            const updateArray = (arr) => arr.map(post =>
+            // ✅ Safe array handling
+            const updateArray = (arr) => (arr || []).map(post =>
                 post._id === postId ? { ...post, likeCount } : post
             );
 
@@ -89,6 +94,7 @@ const postSlice = createSlice({
             state.homeFeed = updateArray(state.homeFeed);
             state.otherUserPost = updateArray(state.otherUserPost);
         }
+
     },
 
 
@@ -120,9 +126,11 @@ const postSlice = createSlice({
             .addCase(deletePost.fulfilled, (state, action) => {
                 state.loading = false;
                 const deletedPostId = action.payload.deletedPostId;
-                state.myPost = state.myPost.filter(post => post._id !== deletedPostId)
-                state.homeFeed = state.homeFeed.filter(post => post._id !== deletedPostId);
+
+                state.myPost = (state.myPost || []).filter(post => post._id !== deletedPostId);
+                state.homeFeed = (state.homeFeed || []).filter(post => post._id !== deletedPostId);
             })
+
             .addCase(editPost.fulfilled, (state, action) => {
                 state.loading = false
                 const updatedPost = action.payload.post;
@@ -133,6 +141,21 @@ const postSlice = createSlice({
                     post._id === updatedPost._id ? updatedPost : post
                 );
 
+            })
+            // postSlice.js
+            .addCase(addComment.fulfilled, (state, action) => {
+                const { postId, commentCount } = action.payload;
+                updatePostInAllArrays(state, postId, (post) => ({
+                    ...post,
+                    commentCount: commentCount
+                }));
+            })
+            .addCase(deleteComment.fulfilled, (state, action) => {
+                const { postId, commentCount } = action.payload;
+                updatePostInAllArrays(state, postId, (post) => ({
+                    ...post,
+                    commentCount: commentCount
+                }));
             })
 
             .addMatcher(isPending, (state) => {

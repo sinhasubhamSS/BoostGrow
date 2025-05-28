@@ -23,7 +23,7 @@ function AddPost({ onClose, postToEdit = null }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        onClose(); // CLOSE IMMEDIATELY
+        // CLOSE IMMEDIATELY
 
         const formData = new FormData();
         formData.append('content', content);
@@ -40,6 +40,7 @@ function AddPost({ onClose, postToEdit = null }) {
             } else {
                 await dispatch(addPost(formData)).unwrap();
             }
+            onClose();
         } catch (error) {
             console.error("Post failed:", error);
             // You can consider bringing the form back if needed

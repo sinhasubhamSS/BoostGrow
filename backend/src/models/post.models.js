@@ -21,8 +21,6 @@ const postSchema = new Schema({
         default: "public"
     },
     likeCount: { type: Number, default: 0 },
-    likedByCurrentUser:{
-        
-    }
+    commentCount: { type: Number, default: 0 },
 }, { timestamps: true })
 export const Post = mongoose.model("Post", postSchema)

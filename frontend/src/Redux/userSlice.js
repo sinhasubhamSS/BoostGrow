@@ -77,8 +77,8 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
-        state.loggedinuser = action.payload
+        state.user = action.payload.user;
+        state.loggedinuser = action.payload.user
 
       })
       .addCase(loginUser.rejected, (state, action) => {

@@ -225,3 +225,75 @@
     padding: 1rem;
   }
 }
+
+
+
+
+
+
+
+
+
+.post-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  padding: 15px;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-content {
+  margin-bottom: 15px;
+}
+
+.post-image {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.post-actions {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.stats-container {
+  display: flex;
+  gap: 15px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.comment-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+} 

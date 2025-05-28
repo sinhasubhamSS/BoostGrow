@@ -33,11 +33,12 @@ const addpost = async (req, res) => {
             content: trimmedContent || null,
             image: imageUrl,
             visibility: visibility || "public",
-            likeCount: 0
+            likeCount: 0,
+            commentCount: 0
         });
 
         await newPost.save();
-
+        await newPost.populate("author", "username profilePicture");
         res.status(200).json({
             message: "Post created successfully",
             post: newPost
@@ -202,6 +203,7 @@ const getHomefeed = async (req, res) => {
                     image: 1,
                     visibility: 1,
                     likeCount: 1,
+                    commentCount: 1,
                     createdAt: 1,
                     author: {
                         _id: 1,

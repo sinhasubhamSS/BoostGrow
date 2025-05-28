@@ -1,30 +1,35 @@
 
 import React, { useEffect, useState } from 'react';
 import "./postcard.css";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { deletePost } from '../../Redux/postSlice';
 import AddPost from './AddPost';
 import LikeComponent from '../interactions/Likecomponent';
 import api from '../../api/axiosInstance';
+import AddComment from '../interactions/AddComment';
 
-function PostCard({ _id, author, image, content, likeCount: initialLikeCount, comments = 0, visibility }) {
+
+
+function PostCard({
+    _id,
+    author,
+    content,
+    image,
+    likeCount: initialLikeCount,
+    commentCount,
+    visibility
+}) {
+    const dispatch = useDispatch();
     const [showOptions, setShowOptions] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const dispatch = useDispatch();
-    const [likeCount, setLikeCount] = useState(initialLikeCount); // ✅ like count state
-    const [liked, setLiked] = useState(false); // ✅ liked state
-    const handleDelete = () => {
-        dispatch(deletePost(_id));
-        setShowOptions(false);
-    };
+    const [likeCount, setLikeCount] = useState(initialLikeCount);
+    const [liked, setLiked] = useState(false);
+    const [showComments, setShowComments] = useState(false);
 
-    const handleEdit = () => {
-        setIsEditing(true);
-        setShowOptions(false);
-    };
-    useEffect(() => {
-        setLikeCount(initialLikeCount);
-    }, [initialLikeCount]);
+    // Current user data
+    const currentUser = useSelector(state => state.user.user);
+
+    // Fetch like status on mount
     useEffect(() => {
         const fetchLikeStatus = async () => {
             try {
@@ -34,97 +39,120 @@ function PostCard({ _id, author, image, content, likeCount: initialLikeCount, co
                 console.error("Error fetching like status:", error);
             }
         };
-
         fetchLikeStatus();
     }, [_id]);
 
-    return (
-        <div className="post-card-wrapper">
-            <div className="post-card">
-                {/* Header Section */}
-                <div className="post-header">
-                    <div className="user-info">
-                        <img
-                            src={author?.avatar || "/default-avatar.png"}
-                            alt="Avatar"
-                            className="user-avatar"
-                        />
-                        <span className="username">{author?.username}</span>
-                    </div>
+    // Update like count when prop changes
+    useEffect(() => {
+        setLikeCount(initialLikeCount);
+    }, [initialLikeCount]);
 
-                    <div className="post-controls">
+    // Handle post deletion
+    const handleDelete = () => {
+        if (window.confirm('Are you sure you want to delete this post?')) {
+            dispatch(deletePost(_id));
+        }
+        setShowOptions(false);
+    };
+
+    // Handle edit post
+    const handleEdit = () => {
+        setIsEditing(true);
+        setShowOptions(false);
+    };
+
+    return (
+        <div className="post-card">
+            {/* Post Header */}
+            <div className="post-header">
+                <div className="user-info">
+                    <img
+                        src={author?.avatar || "/default-avatar.png"}
+                        alt="User Avatar"
+                        className="user-avatar"
+                    />
+                    <div className="user-details">
+                        <h3 className="username">{author?.username}</h3>
+                        <p className="post-visibility">{visibility}</p>
+                    </div>
+                </div>
+
+                {/* Options Dropdown */}
+                {currentUser?._id === author?._id && (
+                    <div className="post-options">
                         <button
-                            className="more-options"
+                            className="options-btn"
                             onClick={() => setShowOptions(!showOptions)}
-                            aria-label="More options"
                         >
                             ⋯
                         </button>
 
                         {showOptions && (
-                            <div className="dropdown-menu">
-                                <button onClick={handleEdit} className="dropdown-item">
-                                    ✏️ Edit
+                            <div className="options-dropdown">
+                                <button onClick={handleEdit} className="edit-btn">
+                                    Edit
                                 </button>
-                                <button onClick={handleDelete} className="dropdown-item delete">
-                                    🗑️ Delete
+                                <button onClick={handleDelete} className="delete-btn">
+                                    Delete
                                 </button>
                             </div>
                         )}
                     </div>
-                </div>
+                )}
+            </div>
 
-                {/* Post Image Section */}
-                <div className="post-media">
+            {/* Post Content */}
+            <div className="post-content">
+                {content && <p className="post-text">{content}</p>}
+                {image && (
                     <img
                         src={image}
                         alt="Post"
                         className="post-image"
                     />
-                </div>
-
-                {/* Action Buttons Section */}
-                <div className="post-actions">
-                    <div className="action-buttons">
-                        <LikeComponent
-                            postId={_id}
-                            likes={likeCount}
-                            setLikes={setLikeCount}
-                            liked={liked}
-                            setLiked={setLiked}
-                        />
-
-
-                        <button className="comment-btn">💬</button>
-                        <button className="share-btn">↗️</button>
-                    </div>
-                    <button className="save-btn">🔖</button>
-                </div>
-
-                {/* Post Details Section */}
-                <div className="post-details">
-                    <p className="likes">{initialLikeCount} {initialLikeCount === 1 ? "like" : "likes"}</p>
-                    <p className="caption">
-                        <span className="caption-username">{author?.username}</span> {content}
-                    </p>
-                    {comments.length > 0 && (
-                        <p className="comment-count">View all {comments.length} {comments.length === 1 ? "comment" : "comments"}</p>
-                    )}
-                </div>
-
-                {isEditing && (
-                    <AddPost
-                        onClose={() => setIsEditing(false)}
-                        postToEdit={{
-                            _id,
-                            author,
-                            content,
-                            postImage: image,
-                            visibility,
-                        }}
-                    />
                 )}
             </div>
+
+            {/* Post Stats and Actions */}
+            <div className="post-actions">
+                <div className="stats-container">
+                    <span className="like-count">{likeCount} likes</span>
+                    <span className="comment-count">{commentCount} comments</span>
+                </div>
+
+                <div className="action-buttons">
+                    <LikeComponent
+                        postId={_id}
+                        liked={liked}
+                        setLiked={setLiked}
+                        likeCount={likeCount}
+                        setLikeCount={setLikeCount}
+                    />
+
+                    <button
+                        className="comment-btn"
+                        onClick={() => setShowComments(!showComments)}
+                    >
+                        💬 Comment
+                    </button>
+                </div>
+
+                {/* Comments Section */}
+                {showComments && <AddComment postId={_id} />}
+            </div>
+
+            {/* Edit Post Modal */}
+            {isEditing && (
+                <AddPost
+                    onClose={() => setIsEditing(false)}
+                    postToEdit={{
+                        _id,
+                        content,
+                        image,
+                        visibility
+                    }}
+                />
+            )}
         </div>
     );
 }

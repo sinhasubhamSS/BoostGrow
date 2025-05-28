@@ -2,28 +2,36 @@ import { Post } from "../models/post.models.js";
 import { Comment } from "../models/comment.models.js";
 //create comment display comment 
 export const addComment = async (req, res) => {
-    try {
-        const userId = req.user._id;
-        const { postId } = req.params;
-        const { content } = req.body;
-        console.log(postId);
-        console.log(content);
+  try {
+    const userId = req.user._id;
+    const { postId } = req.params;
+    const { content } = req.body;
+    console.log(postId);
+    console.log(content);
 
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
-        const newComment = new Comment({
-            post: postId,
-            user: userId,
-            content,
-        });
-        await newComment.save();
-        return res.status(201).json({ message: "Comment added", comment: newComment });
-    } catch (error) {
-        console.error("Add comment error:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
+    const newComment = new Comment({
+      post: postId,
+      user: userId,
+      content,
+    });
+    await newComment.save();
+    const updatedPost = await Post.findByIdAndUpdate(postId,
+      { $inc: { commentCount: 1 } },
+      { new: true }
+    )
+    return res.status(201).json({
+      message: "Comment added",
+      comment: newComment,
+      commentCount: updatedPost.commentCount
+    });
+  } catch (error) {
+    console.error("Add comment error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 
 
 
@@ -32,18 +40,18 @@ export const addComment = async (req, res) => {
 
 
 export const getComments = async (req, res) => {
-    try {
-        const { postId } = req.params;
+  try {
+    const { postId } = req.params;
 
-        const comments = await Comment.find({ post: postId })
-            .populate("user", "username profilePicture") // populate user info (only needed fields)
-            .sort({ createdAt: 1 }); // oldest first, change to -1 for newest first
+    const comments = await Comment.find({ post: postId })
+      .populate("user", "username profilePicture") // populate user info (only needed fields)
+      .sort({ createdAt: -1 }); // oldest first, change to -1 for newest first
 
-        res.status(200).json({ comments });
-    } catch (error) {
-        console.error("Get comments error:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
+    res.status(200).json({ comments });
+  } catch (error) {
+    console.error("Get comments error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 export const deleteComment = async (req, res) => {
   try {
@@ -58,8 +66,12 @@ export const deleteComment = async (req, res) => {
     }
 
     await comment.deleteOne();
-
-    res.status(200).json({ message: "Comment deleted" });
+    const updatedPost = await Post.findByIdAndUpdate(
+      comment.post,
+      { $inc: { commentCount: -1 } },
+      { new: true }
+    );
+    res.status(200).json({ message: "Comment deleted", commentCount: updatedPost.commentCount });
   } catch (error) {
     console.error("Delete comment error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
