@@ -133,7 +133,7 @@ function PostCard({
                         className="comment-btn"
                         onClick={() => setShowComments(!showComments)}
                     >
-                        💬 Comment
+                        💬 
                     </button>
                 </div>
 

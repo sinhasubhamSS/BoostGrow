@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import api from "../../api/axiosInstance";
-import { updateLikeCount } from '../../Redux/postSlice';
+
 
 const LikeComponent = ({ postId, likeCount, setLikeCount, liked, setLiked }) => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const socket = useSelector(state => state.socket.instance);
-  const currentUser = useSelector(state => state.user.user);
+
 
   const handleLikeToggle = async () => {
     if (loading) return;
@@ -19,7 +19,7 @@ const LikeComponent = ({ postId, likeCount, setLikeCount, liked, setLiked }) => 
       setLiked(res.data.liked);
       setLikeCount(res.data.likeCount);
 
-    
+
 
       // Socket notification
       socket.emit("likePost", {
@@ -36,7 +36,7 @@ const LikeComponent = ({ postId, likeCount, setLikeCount, liked, setLiked }) => 
 
   return (
     <button onClick={handleLikeToggle} disabled={loading}>
-      {liked ? "❤️" : "🤍"} {likeCount}
+      {liked ? "❤️" : "🤍"}
     </button>
   );
 };

@@ -133,6 +133,7 @@
   font-size: 0.95rem;
   color: var(--neutral-dark);
   margin-bottom: 0.75rem;
+  word-break: break-word;
 }
 
 .post-image {
@@ -162,52 +163,107 @@
 
 .action-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .like-btn,
 .comment-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background: none;
   border: none;
   font-size: 18px;
   cursor: pointer;
   color: var(--neutral-dark);
-  transition: transform 0.2s ease, color 0.2s ease;
+  padding: 0.5rem;
+  font-weight: 500; /* Added for better visibility */
 }
 
-.like-btn:hover,
-.comment-btn:hover {
-  color: var(--primary);
-  transform: scale(1.1);
+.like-btn {
+  color: var(--primary); /* Changed to primary color for better visibility */
 }
 
-.comment-count {
-  display: block;
-  color: var(--neutral-mid);
-  font-size: 0.9rem;
-  margin-top: 0.75rem;
-  cursor: pointer;
-  transition: color 0.2s ease;
+.comment-btn {
+  color: var(--secondary); /* Changed to secondary color for better visibility */
 }
 
-.comment-count:hover {
-  color: var(--primary);
+.comment-count,
+.like-count {
+  color: var(--neutral-dark); /* Changed to dark color for better visibility */
+  font-size: 0.95rem; /* Slightly larger font */
+  font-weight: 500; /* Added weight */
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .post-card {
     margin: 0.5rem;
     border-radius: 12px;
+    max-width: 95%;
+    padding: 10px;
   }
 
   .post-header,
   .post-content,
   .post-actions {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .options-dropdown {
     right: -0.5rem;
     min-width: 120px;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .action-buttons {
+    gap: 1rem;
+  }
+
+  .like-btn,
+  .comment-btn {
+    font-size: 16px;
+    gap: 0.25rem;
+  }
+
+  .stats-container {
+    font-size: 0.8rem;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-card {
+    max-width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    margin: 0;
+  }
+
+  .post-header {
+    padding: 0.75rem;
+  }
+
+  .user-info {
+    gap: 0.75rem;
+  }
+
+  .action-buttons {
+    gap: 0.75rem;
+  }
+
+  .like-btn,
+  .comment-btn {
+    font-size: 15px;
+    padding: 0.25rem;
+  }
+
+  .post-text {
+    font-size: 0.9rem;
   }
 }
