@@ -63,7 +63,27 @@ const commentSlice = createSlice({
         status: 'idle',
         error: null
     },
-    reducers: {},
+    reducers: {
+
+        pushComment: (state, action) => {
+            const { postId, comment, commentCount } = action.payload;
+
+            if (!state.commentsByPost[postId]) {
+                state.commentsByPost[postId] = {
+                    comments: [],
+                    status: 'idle',
+                    error: null
+                };
+            }
+
+            state.commentsByPost[postId].comments.unshift(comment);
+
+            // If you want to store commentCount too (optional)
+            state.commentsByPost[postId].commentCount = commentCount;
+
+        },
+
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchComments.pending, (state, action) => {
@@ -120,5 +140,6 @@ const commentSlice = createSlice({
             });
     }
 });
+export const { pushComment } = commentSlice.actions;
 
 export default commentSlice.reducer;

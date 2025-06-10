@@ -1,41 +1,52 @@
 import { Post } from "../models/post.models.js";
 import { Comment } from "../models/comment.models.js";
+import { io } from "../socket.js"
 //create comment display comment 
 export const addComment = async (req, res) => {
   try {
     const userId = req.user._id;
     const { postId } = req.params;
     const { content } = req.body;
-    console.log(postId);
-    console.log(content);
 
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
+
     const newComment = new Comment({
       post: postId,
       user: userId,
       content,
     });
     await newComment.save();
-    const updatedPost = await Post.findByIdAndUpdate(postId,
+
+    // Update comment count
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
       { $inc: { commentCount: 1 } },
       { new: true }
-    )
+    );
+
+    // ✅ Emit the comment to all clients
+    const populatedComment = await Comment.findById(newComment._id)
+      .populate("user", "username profilePicture");
+
+    io.emit("sendComment", {
+      comment: populatedComment,
+      postId,
+      commentCount: updatedPost.commentCount,
+    });
+
     return res.status(201).json({
       message: "Comment added",
-      comment: newComment,
-      commentCount: updatedPost.commentCount
+      comment: populatedComment,
+      commentCount: updatedPost.commentCount,
     });
   } catch (error) {
     console.error("Add comment error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
-
-
-
-}
+};
 
 
 

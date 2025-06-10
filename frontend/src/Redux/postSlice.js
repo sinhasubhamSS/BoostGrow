@@ -93,7 +93,15 @@ const postSlice = createSlice({
             state.myPost = updateArray(state.myPost);
             state.homeFeed = updateArray(state.homeFeed);
             state.otherUserPost = updateArray(state.otherUserPost);
+        },
+        updateCommentCount: (state, action) => {
+            const { postId, commentCount } = action.payload;
+            updatePostInAllArrays(state, postId, (post) => ({
+                ...post,
+                commentCount
+            }));
         }
+
 
     },
 
@@ -172,5 +180,5 @@ const postSlice = createSlice({
 });
 
 export default postSlice.reducer;
-export const { updateLikeCount } = postSlice.actions;
+export const { updateLikeCount, updateCommentCount } = postSlice.actions;
 
