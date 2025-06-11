@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Singlemessage from './Singlemessage';
@@ -11,8 +10,9 @@ function MessageList() {
   const messages = useSelector((state) => state.message?.messages || []);
   const loggedInuser = useSelector((state) => state.user.loggedinuser);
   const socket = useSelector(state => state.socket.instance);
-  // const onlineuser = useSelector(state => state.user.onlineusers);
-  const lastMessageRef = useRef(null);
+
+  const containerRef = useRef(null);
+
   // Fetch messages when selected user changes
   useEffect(() => {
     if (selectedUser) {
@@ -32,27 +32,35 @@ function MessageList() {
       dispatch(addMessage(newMessage));
     };
 
-    // ✅ Corrected event name
     socket.on("newMessage", handleReceiveMessage);
 
     return () => {
       socket.off("newMessage", handleReceiveMessage);
     };
   }, [socket, dispatch]);
+
+  // Scroll to bottom when messages update
   useEffect(() => {
-    if (lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages])
+    const scrollToBottom = () => {
+      const container = containerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    };
+
+    // Delay helps if message content is large
+    setTimeout(scrollToBottom, 50);
+  }, [messages]);
+
   return (
-    <div className="message-container">
+    <div className="message-container" ref={containerRef}>
       {messages.length > 0 ? (
-        messages.map((msg, index) => {
-          const isSender = msg.sender?._id === loggedInuser._id;
+        messages.map((msg) => {
+          const isSender =
+            msg.sender === loggedInuser._id || msg.sender?._id === loggedInuser._id;
+
           return (
-            <div key={msg._id} ref={index === messages.length - 1 ? lastMessageRef : null}>
-              <Singlemessage msg={msg} isSender={isSender} />
-            </div>
+            <Singlemessage key={msg._id} msg={msg} isSender={isSender} />
           );
         })
       ) : (
@@ -60,10 +68,6 @@ function MessageList() {
       )}
     </div>
   );
-
 }
 
 export default MessageList;
-//
-
-

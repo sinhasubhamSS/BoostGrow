@@ -1,5 +1,6 @@
 /* messageinput.css */
 .messageinput {
+  flex-shrink: 0; /* Prevent input from shrinking */
   padding: 1rem;
   background: white;
   border-top: var(--border-width) solid var(--border-color);
@@ -7,7 +8,6 @@
   gap: 0.75rem;
   position: relative;
 }
-
 .messageinput input {
   flex: 1;
   padding: 0.75rem 1.25rem;
@@ -22,9 +22,7 @@
 .messageinput input:focus {
   outline: none;
   background: white;
-  box-shadow: 
-    0 0 0 2px var(--primary),
-    var(--shadow-md);
+  box-shadow: 0 0 0 2px var(--primary), var(--shadow-md);
 }
 
 .snd__btn {
