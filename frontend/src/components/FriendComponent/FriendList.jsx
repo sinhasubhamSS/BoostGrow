@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchRequests, acceptRequest, rejectRequest, addfriendRequest } from "../../Redux/friendSlice"
-
+import './friendcss/friendList.css';
 function FriendList() {
     const dispatch = useDispatch();
     const {

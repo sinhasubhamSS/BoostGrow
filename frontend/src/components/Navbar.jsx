@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Logout from './Logout';
 import "./Csscomponents/navbar.css";
 import SearchUsers from './SearchUsers';
 import AddPost from './Post/AddPost';
@@ -40,8 +39,8 @@ function Navbar() {
         {/* Logo */}
         <div className="logo-container">
           <Link to="/" className="logo-link">
-            <img src="/logo.png" alt="Logo" className="logo-img" />
-            <span className="logo-text">SocialApp</span>
+            {/* <img src="/logo.png" className="logo-img" /> */}
+            <span className="logo-text">TaskSync</span>
           </Link>
         </div>
 
@@ -115,7 +114,7 @@ function Navbar() {
                       <p className="dropdown-header">Hello, {user.username}</p>
                       <Link to="/update-profile" className="dropdown-item">Update Profile</Link>
                       <Link to={`/profile/${user._id}`} className="dropdown-item">My Profile</Link>
-                      <Logout className="dropdown-item" />
+                      <Link to={'/Logout'}className="dropdown-item" >Logout</Link>
                     </div>
                   )}
                 </div>

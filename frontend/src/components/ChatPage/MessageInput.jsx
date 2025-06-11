@@ -1,17 +1,12 @@
 
-
-
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../../Redux/messageSlice";
 import "./messageinput.css";
 
-
-
 function MessageInput() {
   const [messageText, setMessageText] = useState("");
   const selectedUser = useSelector((state) => state.user.selectedUser);
-  const user = useSelector((state) => state.user.loggedinuser)
   const dispatch = useDispatch();
   // const socket = useSelector((state)=>state.socket.socket);
   const socket = useSelector(state => state.socket.instance);

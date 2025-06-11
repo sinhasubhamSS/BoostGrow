@@ -12,8 +12,8 @@ import Chatpage from './pages/Chatpage'
 import useSocket from './services/Socket'
 import Profilepage from './pages/Profilepage'
 import { useDispatch, useSelector } from 'react-redux'
-import { myprofile } from './Redux/friendSlice'
 import FriendList from './components/FriendComponent/FriendList'
+import About from './pages/AboutPage'
 
 const router = createBrowserRouter
     (
@@ -27,6 +27,8 @@ const router = createBrowserRouter
                     {/* <Route path="profile" element={<Profilepage />} /> */}
                     <Route path='profile/:userId' element={<Profilepage />} />
                     <Route path='friend-requests' element={<FriendList />} />
+                    <Route path='logout' element={<Logout/>} />
+                    <Route path='about' element={<About/>} />
 
 
 

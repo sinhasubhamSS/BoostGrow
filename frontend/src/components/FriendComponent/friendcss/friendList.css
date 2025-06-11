@@ -1,0 +1,133 @@
+.friend-list-container {
+  margin-top: 80px; /* space for navbar */
+  height: 100vh;
+  padding: 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+}
+
+.requests-section {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.requests-section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.request-card {
+  background-color: #f0f2f5;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+  transition: transform 0.2s ease;
+}
+
+.request-card:hover {
+  transform: translateY(-2px);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-info h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #000;
+}
+
+.request-time {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.action-buttons {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.accept-btn,
+.reject-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.accept-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.status-tag {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #ccc;
+  color: #000;
+}
+
+.status-tag.pending {
+  background-color: orange;
+  color: white;
+}
+
+.status-tag.accepted {
+  background-color: #4caf50;
+  color: white;
+}
+
+.status-tag.rejected {
+  background-color: #f44336;
+  color: white;
+}
+
+.no-requests {
+  color: #888;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .requests-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .friend-list-container {
+    padding: 1rem;
+  }
+}

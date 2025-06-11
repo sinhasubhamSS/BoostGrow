@@ -1,8 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import "./Csscomponents/footer.css"; // Import your CSS for the footer
+import { Link, useNavigate } from "react-router-dom";
+import "./Csscomponents/footer.css";
 
 function Footer() {
+  const navigate = useNavigate();
+
+  const handleHomeClick = () => {
+    navigate("/"); // Go to Homepage
+    setTimeout(() => {
+      const heroSection = document.getElementById("hero");
+      if (heroSection) {
+        heroSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 0);
+  };
+
   return (
     <footer className="footer-modern">
       <div className="footer-content">
@@ -16,10 +28,18 @@ function Footer() {
         <div className="footer-links">
           <h4>Quick Links</h4>
           <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            <li><Link to="/auth/login">Login</Link></li>
+            <li onClick={handleHomeClick} style={{ cursor: "pointer" }}>
+              Home
+            </li>
+            <li>
+              <Link to="/about" style={{ cursor: "pointer" }}>About</Link>
+            </li>
+            <li>
+              <Link to="/#contact" style={{ cursor: "pointer" }}>Contact</Link>
+            </li>
+            <li>
+              <Link to="/logout" style={{ cursor: "pointer" }}>Logout</Link>
+            </li>
           </ul>
         </div>
 

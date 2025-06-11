@@ -1,20 +1,19 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { logoutUser } from '../Redux/userSlice'; // Adjust the path as needed
+import { logoutUser } from '../Redux/userSlice';
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-hot-toast';
 function Logout() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        dispatch(logoutUser()); // Clear user state from Redux
-        navigate('/auth/Login'); // Redirect to login page
-    };
+    useEffect(() => {
+        dispatch(logoutUser());
+        toast.success("Logged out successfully");
+        navigate('/auth/Login');
+    }, [dispatch, navigate]);
 
-    return (
-        <button onClick={handleLogout}>Logout</button>
-    );
+    return null;
 }
 
 export default Logout;

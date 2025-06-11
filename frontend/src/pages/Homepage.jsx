@@ -10,10 +10,10 @@ function Homepage() {
 
   
   return (
-    <>
+    <div >
     <HeroSection/>
     <PostFeed/>
-    </>
+    </div>
   )
 }
 export default Homepage     

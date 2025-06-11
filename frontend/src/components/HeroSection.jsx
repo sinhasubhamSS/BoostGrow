@@ -11,7 +11,7 @@ function HeroSection() {
   return (
     <>
      
-      <section className="hero__section">
+      <section id="hero" className="hero__section">
         <div className="hero__content">
           <div className="hero__text">
             <h1 className="hero__title">Hey, Record Your Daily Tasks</h1>
