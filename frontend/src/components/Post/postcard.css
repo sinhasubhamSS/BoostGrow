@@ -138,7 +138,7 @@
 
 .post-image {
   width: 100%;
-  max-height: 100vh;
+  height: 480px;
   object-fit: cover;
   border-radius: 8px;
   background: var(--neutral-mid);
@@ -185,7 +185,9 @@
 }
 
 .comment-btn {
-  color: var(--secondary); /* Changed to secondary color for better visibility */
+  color: var(
+    --secondary
+  ); /* Changed to secondary color for better visibility */
 }
 
 .comment-count,
