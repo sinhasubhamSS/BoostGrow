@@ -6,8 +6,8 @@
 }
 
 .sidebar__header {
-  padding: 1.5rem;
-  font-size: 1.5rem;
+  padding: 0.5rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--primary);
   border-bottom: var(--border-width) solid var(--border-color);
@@ -15,14 +15,14 @@
 }
 
 .sidebar__search {
-  padding: 1rem;
+  padding: 0.5rem;
   background: var(--neutral-light);
   border-bottom: var(--border-width) solid var(--border-color);
 }
 
 .sidebar__search input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem;
   border: none;
   border-radius: var(--border-radius);
   background: white;

@@ -2,13 +2,16 @@
 @import "../../../colour.css";
 
 .navbar-container {
+  width: 90%;
+  max-width: 1200px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index:99999;
+  z-index: 99999;
   background-color: var(--neutral-light);
   box-shadow: var(--shadow-sm);
+  margin: auto;
 }
 
 .navigation {

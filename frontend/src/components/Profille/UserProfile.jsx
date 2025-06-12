@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import "./userprofile.css";
 import FollowUnfollow from '../FriendComponent/FollowUnfollow';
+
 import {
   addFollower,
   followerandfollowing,
@@ -13,6 +14,7 @@ import {
 } from '../../Redux/friendSlice';
 import toast from 'react-hot-toast';
 import { fetchMyPost, fetchOthersPost } from '../../Redux/postSlice';
+import ProfilePostCard from './ProfilePostCard';
 function UserProfile({ userId }) {
   const dispatch = useDispatch();
 
@@ -153,14 +155,11 @@ function UserProfile({ userId }) {
       <div className="profile_posts_grid">
         {postsToShow.length > 0 ? (
           postsToShow.map(post => (
-            <div key={post._id} className="post_card">
-              <img src={post.image} alt="post" />
-            </div>
+            <ProfilePostCard key={post._id} post={post} />
           ))
         ) : (
-          <p> no posts</p>
+          <p>No posts</p>
         )}
-
       </div>
     </div>
 

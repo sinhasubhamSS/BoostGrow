@@ -1,15 +1,17 @@
 .chatpage {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
   display: flex;
   height: 100vh;
   background: var(--neutral-light);
   overflow: hidden;
-  padding-top: 64px;
   padding-bottom: 1rem;
   box-sizing: border-box; /* Ensures padding is included in height */
 }
 
 .sidebar__section {
-  width: 480px;
+  width: 360px;
   height: 100%;
   background: var(--neutral-light);
   border-right: var(--border-width) solid var(--border-color);
@@ -24,4 +26,6 @@
   border-radius: var(--border-radius) 0 0 0;
   box-shadow: var(--shadow-sm);
   overflow: hidden; /* Prevent scroll bleed */
+  padding-bottom: 2rem;
+  flex-direction: column; /* ✅ Required */
 }
